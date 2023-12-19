@@ -7,7 +7,7 @@ import torch
 
 # [!] look how they deal with dt in RL TDs
 
-class EnergyConverter(gym.Env):
+class EnergyConverterEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 60}
 
     def __init__(self):
