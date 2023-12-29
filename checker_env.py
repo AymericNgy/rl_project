@@ -1,13 +1,4 @@
-"""
-    This module defines the CheckerBoard class.
-"""
-# Andrew Edwards -- almostimplemented.com
-# =======================================
-# A simple and efficient checker board class.
-#
-# Created July 29, 2014
-
-### CONSTANTS
+# CONSTANTS
 
 # Black moves "forward", white moves "backward"
 BLACK, WHITE = 0, 1
@@ -19,10 +10,10 @@ BLACK, WHITE = 0, 1
 
 UNUSED_BITS = 0b100000000100000000100000000100000000
 
+# CLASSES
 
-### CLASSES
 
-class CheckerBoard:
+class CheckerEnv:
     def __init__(self):
         """
             Initiates board via new_game().
@@ -195,9 +186,7 @@ class CheckerBoard:
             moves += [0x21 << i for (i, bit) in enumerate(bin(lf)[::-1]) if bit == '1']
             moves += [0x11 << i - 4 for (i, bit) in enumerate(bin(rb)[::-1]) if bit == '1']
             moves += [0x21 << i - 5 for (i, bit) in enumerate(bin(lb)[::-1]) if bit == '1']
-            print("[!]", moves)
-            for num in moves:
-                print(bin(num))
+            print(moves)
             return moves
 
     def get_jumps(self):
@@ -282,7 +271,7 @@ class CheckerBoard:
         """
             Returns a new board with the exact same state as the calling object.
         """
-        B = CheckerBoard()
+        B = CheckerEnv()
         B.active = self.active
         B.backward = [x for x in self.backward]
         B.empty = self.empty
