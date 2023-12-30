@@ -64,7 +64,7 @@ class CheckerBoard:
         passive = self.passive
         if move < 0:
             move *= -1
-            taken_piece = int(1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') / 2)
+            taken_piece = int(1 << int(sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') / 2))
             self.pieces[passive] ^= taken_piece
             if self.forward[passive] & taken_piece:
                 self.forward[passive] ^= taken_piece
