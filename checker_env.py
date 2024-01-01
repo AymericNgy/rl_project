@@ -16,7 +16,7 @@ UNUSED_BITS = 0b100000000100000000100000000100000000
 # CLASSES
 
 # [!] be careful about diff between self and other
-# [!] test new methods
+# [!] test new methods #
 
 class CheckerEnv:
     def __init__(self):
