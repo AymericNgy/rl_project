@@ -53,11 +53,18 @@ class CheckerEnv:
 
         return current_state, current_player
 
-    def transition_function(self, state, action, player):
-        # we can only determine new state since the current state of self
-        # -> difficult to implement even with peak_move() function
-        raise ValueError("transition_function not implemented")
+    def virtual_step(self, move):
+        """
+        transiton fucntion since the current state and player of self
+        :param action: move
+        :return:
+        """
 
+        next_board = self.peek_move(move)
+        state = next_board.get_state()
+        player = next_board.active
+
+        return state, player
 
     def check_termination(self):
         done = self.is_over()
