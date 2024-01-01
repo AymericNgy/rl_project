@@ -248,7 +248,6 @@ class CheckerEnv:
             moves += [0x21 << i for (i, bit) in enumerate(bin(lf)[::-1]) if bit == '1']
             moves += [0x11 << i - 4 for (i, bit) in enumerate(bin(rb)[::-1]) if bit == '1']
             moves += [0x21 << i - 5 for (i, bit) in enumerate(bin(lb)[::-1]) if bit == '1']
-            print(moves)
             return moves
 
     def get_jumps(self):
