@@ -11,13 +11,14 @@ if __name__ == '__main__':
         state, cur_player = env.reset()
         done = False
         total_reward = 0
-        turn=0
+        turn = 0
         while not done:
             moves, states = env.available_states()
             action = random.choice(moves)
             state, reward, done, cur_player = env.step(action)
             total_reward += reward
-            turn += 1
+            if not env.jump:  # if not in jump session add a turn
+                turn += 1
         print("finish in {} turns".format(turn))
         rewards.append(total_reward)
 
