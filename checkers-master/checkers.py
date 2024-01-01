@@ -1,3 +1,6 @@
+import numpy as np
+
+
 """
     This module defines the CheckerBoard class.
 """
@@ -52,6 +55,16 @@ class CheckerBoard:
         self.jump = 0
         self.mandatory_jumps = []
 
+    def available_states(self):
+        moves = []
+        states = []
+        for move in self.get_moves():
+            moves.append(move)
+            states.append(self.peek_move(move).get_state())
+        return moves, states
+
+
+
     def make_move(self, move):
         """
             Updates the game state to reflect the effects of the input
@@ -64,7 +77,7 @@ class CheckerBoard:
         passive = self.passive
         if move < 0:
             move *= -1
-            taken_piece = int(1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') / 2)
+            taken_piece = int(1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') // 2) # [!] changed
             self.pieces[passive] ^= taken_piece
             if self.forward[passive] & taken_piece:
                 self.forward[passive] ^= taken_piece
@@ -195,9 +208,9 @@ class CheckerBoard:
             moves += [0x21 << i for (i, bit) in enumerate(bin(lf)[::-1]) if bit == '1']
             moves += [0x11 << i - 4 for (i, bit) in enumerate(bin(rb)[::-1]) if bit == '1']
             moves += [0x21 << i - 5 for (i, bit) in enumerate(bin(lb)[::-1]) if bit == '1']
-            print("[!]", moves)
-            for num in moves:
-                print(bin(num))
+            # print("[!]", moves)
+            # for num in moves:
+            #     print(bin(num))
             return moves
 
     def get_jumps(self):
@@ -292,6 +305,51 @@ class CheckerBoard:
         B.passive = self.passive
         B.pieces = [x for x in self.pieces]
         return B
+    def get_state(self):
+        """
+        return numpy array of state
+
+        """
+        EMPTY = -1
+        BLACK_KING = 2
+        WHITE_KING = 3
+
+        if self.active == BLACK:
+            black_kings = self.backward[self.active]
+            black_men = self.forward[self.active] ^ black_kings
+            white_kings = self.forward[self.passive]
+            white_men = self.backward[self.passive] ^ white_kings
+        else:
+            black_kings = self.backward[self.passive]
+            black_men = self.forward[self.passive] ^ black_kings
+            white_kings = self.forward[self.active]
+            white_men = self.backward[self.active] ^ white_kings
+
+        state = [[None for _ in range(8)] for _ in range(4)]
+
+        black_king_value = -1
+        black_value = -0.5
+        empty_value = 0
+        white_value = 0.5
+        white_king_value = 1
+
+        for i in range(4):
+            for j in range(8):
+                cell = 1 << (9 * i + j)
+                if cell & black_men:
+                    state[i][j] = black_value
+                elif cell & white_men:
+                    state[i][j] = white_value
+                elif cell & black_kings:
+                    state[i][j] = black_king_value
+                elif cell & white_kings:
+                    state[i][j] = white_king_value
+                else:
+                    state[i][j] = empty_value
+
+        return np.array(state).flatten()
+
+
 
     def __str__(self):
         """

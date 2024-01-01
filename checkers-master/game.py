@@ -39,6 +39,9 @@ def main():
         current_player = B.active
         while not game_over(B):
             print(B)
+            # add [!] :
+            print("state : ", B.get_state())
+            print("next state/move", B.available_states())
 
             legal_moves = B.get_moves()
 
@@ -77,6 +80,9 @@ def main():
                 turn += 1
 
         print(B)
+        # add [!] :
+        print("state : ", B.get_state())
+        print("next state/move", B.available_states())
         if B.active == WHITE:
             print("Congrats Black, you win!")
         else:
@@ -104,6 +110,9 @@ def main():
         print("Black moves first.")
         while not B.is_over():
             print(B)
+            # add [!] :
+            print("state : ", B.get_state())
+            print("next state/move", B.available_states())
             if turn % 2 == choice:
                 legal_moves = B.get_moves()
                 if B.jump:
@@ -143,6 +152,9 @@ def main():
                     current_player = B.active
                     turn += 1
         print(B)
+        # add [!] :
+        print("state : ", B.get_state())
+        print("next state/move", B.available_states())
         if B.active == WHITE:
             print("Congrats Black, you win!")
         else:

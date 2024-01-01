@@ -1,3 +1,5 @@
+import numpy as np
+
 # CONSTANTS
 
 # Black moves "forward", white moves "backward"
@@ -10,8 +12,11 @@ BLACK, WHITE = 0, 1
 
 UNUSED_BITS = 0b100000000100000000100000000100000000
 
+
 # CLASSES
 
+# [!] be careful about diff between self and other
+# [!] test new methods
 
 class CheckerEnv:
     def __init__(self):
@@ -22,6 +27,47 @@ class CheckerEnv:
         self.backward = [None, None]
         self.pieces = [None, None]
         self.new_game()
+
+    def step(self, move):
+        done, winning_player = self.check_termination()
+        assert done == False  # error if step() function call but game ended
+
+        self.make_move(move)
+        current_state = self.get_state()
+        current_player = self.active
+
+        reward = 0
+        done, winning_player = self.check_termination()
+        if winning_player == "White":  # [!] can be exchanged
+            reward = 1
+        if winning_player == "Black":
+            reward = -1
+
+        return current_state, reward, done, current_player
+
+    def reset(self):
+        self.new_game()
+
+        current_state = self.get_state()
+        current_player = self.active
+
+        return current_state, current_player
+
+    def transition_function(self, state, action, player):
+        # we can only determine new state since the current state of self
+        # -> difficult to implement even with peak_move() function
+        raise ValueError("transition_function not implemented")
+
+
+    def check_termination(self):
+        done = self.is_over()
+
+        if self.active == WHITE:
+            winning_player = "Black"
+        else:
+            winning_player = "White"
+
+        return done, winning_player
 
     def new_game(self):
         """
@@ -42,6 +88,15 @@ class CheckerEnv:
 
         self.jump = 0
         self.mandatory_jumps = []
+
+    def available_states(self):
+        """return all moves possible and corresponding following states"""
+        moves = []
+        states = []
+        for move in self.get_moves():
+            moves.append(move)
+            states.append(self.peek_move(move).get_state())
+        return moves, states
 
     def make_move(self, move):
         """
@@ -281,6 +336,51 @@ class CheckerEnv:
         B.passive = self.passive
         B.pieces = [x for x in self.pieces]
         return B
+
+    # [!] need to be improved ?
+    def get_state(self):
+        """
+        return numpy array of state - length 32
+        from right bottom to up left
+        """
+        EMPTY = -1
+        BLACK_KING = 2
+        WHITE_KING = 3
+
+        if self.active == BLACK:
+            black_kings = self.backward[self.active]
+            black_men = self.forward[self.active] ^ black_kings
+            white_kings = self.forward[self.passive]
+            white_men = self.backward[self.passive] ^ white_kings
+        else:
+            black_kings = self.backward[self.passive]
+            black_men = self.forward[self.passive] ^ black_kings
+            white_kings = self.forward[self.active]
+            white_men = self.backward[self.active] ^ white_kings
+
+        state = [[None for _ in range(8)] for _ in range(4)]
+
+        black_king_value = -1
+        black_value = -0.5
+        empty_value = 0
+        white_value = 0.5
+        white_king_value = 1
+
+        for i in range(4):
+            for j in range(8):
+                cell = 1 << (9 * i + j)
+                if cell & black_men:
+                    state[i][j] = black_value
+                elif cell & white_men:
+                    state[i][j] = white_value
+                elif cell & black_kings:
+                    state[i][j] = black_king_value
+                elif cell & white_kings:
+                    state[i][j] = white_king_value
+                else:
+                    state[i][j] = empty_value
+
+        return np.array(state).flatten()
 
     def __str__(self):
         """
