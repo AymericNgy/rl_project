@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def get_batch(number_of_parties, model):
+def get_batch(number_of_parties, model, verbose=False):
     """
     return batch of value of states with model against random policy
     :param number_of_parties:
@@ -32,8 +32,6 @@ def get_batch(number_of_parties, model):
         while not done:
             moves, states = env.available_states()
 
-
-
             # choose action
             if turn % 2 == first_turn_of_model:
                 index = model.get_index_to_act(states)
@@ -48,8 +46,6 @@ def get_batch(number_of_parties, model):
                 states_visited.append(state)
                 number_new_states += 1
 
-
-
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
 
@@ -60,11 +56,18 @@ def get_batch(number_of_parties, model):
             final_reward = 0
         rewards += [final_reward] * number_new_states
 
-    return torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(model.device).float()
+    states_torch, rewards_torch = torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(
+        model.device).float()
+
+    if verbose:
+        print("get_batch -> mean reawrd : ", rewards_torch.mean())
+
+    return states_torch, rewards_torch
 
 
 if __name__ == '__main__':
     from agent_mc import Policy
+
     policy = Policy()
     number_of_parties = 100
     states, rewards = get_batch(number_of_parties, policy)

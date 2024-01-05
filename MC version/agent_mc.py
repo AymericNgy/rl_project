@@ -9,6 +9,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 import matplotlib.pyplot as plt
 
+
 class Policy(nn.Module):
     def __init__(self):
         super().__init__()
@@ -55,18 +56,20 @@ class Policy(nn.Module):
 
         return torch.argmax(values)
 
-    def train(self, num_epochs=100, learning_rate=0.01, plot=False):
+    def train(self, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False):
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self.parameters(), lr=learning_rate)
 
-        number_of_parties_for_batch = 100
-
         losses = []
+        mean_rewards = []
 
         for epoch in range(num_epochs):
             # generate data
 
             states, rewards = get_batch(number_of_parties_for_batch, self)
+
+            mean_reward = rewards.mean()
+            mean_rewards.append(mean_reward)
 
             values = self.evaluate_value(states)
             loss = criterion(values.squeeze(), rewards)
@@ -80,7 +83,7 @@ class Policy(nn.Module):
             losses.append(loss)
 
             if (epoch + 1) % 3 == 0:
-                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}')
+                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Reward : {mean_reward:.4f}')
 
         if plot:
             plt.figure(figsize=(10, 5))
@@ -88,6 +91,15 @@ class Policy(nn.Module):
             plt.xlabel('Epochs')
             plt.ylabel('Loss')
             plt.title('Training Loss Over Epochs')
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+
+            plt.figure(figsize=(10, 5))
+            plt.plot(mean_rewards, label='mean reward')
+            plt.xlabel('Epochs')
+            plt.ylabel('Mean reward')
+            plt.title('Reward Over Epochs')
             plt.legend()
             plt.grid(True)
             plt.show()
