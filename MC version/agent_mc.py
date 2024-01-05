@@ -1,12 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
+import torch.nn.init as init
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class Policy(nn.Module):
     def __init__(self):
         super().__init__()
+
+        self.device = device
 
         # value
         self.value_input_dim = 32
@@ -25,8 +29,15 @@ class Policy(nn.Module):
 
         self.fc_layers.append(nn.Linear(prev_dim, self.value_output_dim))
 
+        for layer in self.fc_layers:
+            if isinstance(layer, nn.Linear):
+                init.xavier_uniform_(layer.weight)  # Xavier/Glorot initialization
+                init.constant_(layer.bias, 0.0)  # Initialize bias to zero
+
+        self.to(self.device)
+
     def evaluate_value(self, state):
-        x = state
+        x = state.float()
         for layer in self.fc_layers:
             x = layer(x)
         return x
@@ -36,11 +47,10 @@ class Policy(nn.Module):
         :param available_states: python list of available state
         :return: index of the chosen action
         """
-        values = [self.evaluate_value(state) for state in available_states]
+        available_states = torch.from_numpy(np.array(available_states)).to(self.device)
+        values = self.evaluate_value(available_states)
 
-        index_of_max = values.index(max(values))
-
-        return index_of_max
+        return torch.argmax(values)
 
     def train(self):
         pass
