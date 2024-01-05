@@ -1,7 +1,6 @@
 from checker_env import CheckerEnv
 from numpy import random
 import torch
-from agent_mc import Policy
 import numpy as np
 from tqdm import tqdm
 
@@ -21,7 +20,7 @@ def get_batch(number_of_parties, model):
     first_turn_of_model = 0
     color_of_model = first_turn_of_model
 
-    for party in tqdm(range(number_of_parties)):
+    for party in range(number_of_parties):
 
         state, cur_player = env.reset()
         done = False
@@ -38,9 +37,7 @@ def get_batch(number_of_parties, model):
             # choose action
             if turn % 2 == first_turn_of_model:
                 index = model.get_index_to_act(states)
-                # print(index)
-                action = moves[index] #very slow [!] change
-                # action = random.choice(moves)
+                action = moves[index]
             else:
                 action = random.choice(moves)
             state, reward, done, cur_player = env.step(action)
@@ -67,7 +64,8 @@ def get_batch(number_of_parties, model):
 
 
 if __name__ == '__main__':
+    from agent_mc import Policy
     policy = Policy()
-    number_of_parties = 10
+    number_of_parties = 100
     states, rewards = get_batch(number_of_parties, policy)
     print(rewards.mean())

@@ -3,8 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import torch.nn.init as init
+from worker import get_batch
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+import matplotlib.pyplot as plt
 
 class Policy(nn.Module):
     def __init__(self):
@@ -52,8 +55,43 @@ class Policy(nn.Module):
 
         return torch.argmax(values)
 
-    def train(self):
-        pass
+    def train(self, num_epochs=100, learning_rate=0.01, plot=False):
+        criterion = nn.MSELoss()
+        optimizer = optim.SGD(self.parameters(), lr=learning_rate)
+
+        number_of_parties_for_batch = 100
+
+        losses = []
+
+        for epoch in range(num_epochs):
+            # generate data
+
+            states, rewards = get_batch(number_of_parties_for_batch, self)
+
+            values = self.evaluate_value(states)
+            loss = criterion(values.squeeze(), rewards)
+
+            # Backward pass and optimization
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            loss = loss.item()
+            losses.append(loss)
+
+            if (epoch + 1) % 3 == 0:
+                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}')
+
+        if plot:
+            plt.figure(figsize=(10, 5))
+            plt.plot(losses, label='Training Loss')
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.title('Training Loss Over Epochs')
+            plt.legend()
+            plt.grid(True)
+            plt.show()
+
     # def save(self):
     #     torch.save(self.state_dict(), 'model_save/model.pt')
 
@@ -61,4 +99,6 @@ class Policy(nn.Module):
     #     self.load_state_dict(torch.load('model_save/model.pt', map_location=self.device))
 
 
-
+if __name__ == '__main__':
+    policy = Policy()
+    policy.train(plot=True)
