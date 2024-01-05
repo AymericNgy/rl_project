@@ -68,7 +68,7 @@ class Policy(nn.Module):
 
             states, rewards = get_batch(number_of_parties_for_batch, self)
 
-            mean_reward = rewards.mean()
+            mean_reward = float(rewards.mean())
             mean_rewards.append(mean_reward)
 
             values = self.evaluate_value(states)
@@ -84,6 +84,7 @@ class Policy(nn.Module):
 
             if (epoch + 1) % 1 == 0:
                 print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Reward : {mean_reward:.4f}')
+                self.save()
 
         if plot:
             plt.figure(figsize=(10, 5))
@@ -104,13 +105,15 @@ class Policy(nn.Module):
             plt.grid(True)
             plt.show()
 
-    # def save(self):
-    #     torch.save(self.state_dict(), 'model_save/model.pt')
+    def save(self):
+        torch.save(self.state_dict(), 'model_save/model_2.pt')
 
-    # def load(self):
-    #     self.load_state_dict(torch.load('model_save/model.pt', map_location=self.device))
+    def load(self):
+        self.load_state_dict(torch.load('model_save/model.pt', map_location=self.device))
 
 
 if __name__ == '__main__':
     policy = Policy()
-    policy.train(num_epochs=30, plot=True)
+    policy.load()
+    print("model load")
+    policy.train(num_epochs=100, number_of_parties_for_batch=100, plot=True)

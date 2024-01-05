@@ -17,7 +17,7 @@ def get_batch(number_of_parties, model, verbose=False):
     rewards = []
     env = CheckerEnv()
 
-    first_turn_of_model = 0
+    first_turn_of_model = 0  # [!] use it many times in code need to be global or other
     color_of_model = first_turn_of_model
 
     for party in range(number_of_parties):
@@ -48,6 +48,7 @@ def get_batch(number_of_parties, model, verbose=False):
 
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
+        print("total turn", turn)
 
         color_looser_player = env.active
         if color_looser_player == color_of_model:
