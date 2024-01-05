@@ -51,9 +51,9 @@ def get_batch(number_of_parties, model, verbose=False):
 
         color_looser_player = env.active
         if color_looser_player == color_of_model:
-            final_reward = 1
-        else:
             final_reward = 0
+        else:
+            final_reward = 1
         rewards += [final_reward] * number_new_states
 
     states_torch, rewards_torch = torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(

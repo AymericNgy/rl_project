@@ -82,7 +82,7 @@ class Policy(nn.Module):
             loss = loss.item()
             losses.append(loss)
 
-            if (epoch + 1) % 3 == 0:
+            if (epoch + 1) % 1 == 0:
                 print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Reward : {mean_reward:.4f}')
 
         if plot:
@@ -113,4 +113,4 @@ class Policy(nn.Module):
 
 if __name__ == '__main__':
     policy = Policy()
-    policy.train(plot=True)
+    policy.train(num_epochs=30, plot=True)
