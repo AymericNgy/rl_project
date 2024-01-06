@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def get_batch(number_of_parties, model, verbose=False):
+def get_batch(number_of_parties, model, gamma=0.99, verbose=False):
     """
     return batch of value of states with model against random policy
     :param number_of_parties:
@@ -19,13 +19,17 @@ def get_batch(number_of_parties, model, verbose=False):
 
     first_turn_of_model = 0  # [!] use it many times in code need to be global or other
     color_of_model = first_turn_of_model
+    parties_win = 0
 
-    for party in range(number_of_parties):
+    for party in tqdm(range(number_of_parties)):
 
         state, cur_player = env.reset()
         done = False
         total_reward = 0
         turn = 0
+
+        intermediate_rewards = []
+        cumulative_gamma = 1
 
         number_new_states = 0
 
@@ -45,6 +49,8 @@ def get_batch(number_of_parties, model, verbose=False):
             if turn % 2 == first_turn_of_model:
                 states_visited.append(state)
                 number_new_states += 1
+                intermediate_rewards.append(cumulative_gamma)
+                cumulative_gamma *= gamma
 
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
@@ -53,16 +59,17 @@ def get_batch(number_of_parties, model, verbose=False):
 
         color_looser_player = env.active
         if color_looser_player == color_of_model:
-            final_reward = 0
+            rewards += [0] * number_new_states
         else:
-            final_reward = 1
-        rewards += [final_reward] * number_new_states
+            intermediate_rewards.reverse()
+            rewards += intermediate_rewards
+            parties_win += 1
 
     states_torch, rewards_torch = torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(
         model.device).float()
 
     if verbose:
-        print("get_batch -> mean reawrd : ", rewards_torch.mean())
+        print("get_batch -> win rate: ", parties_win / number_of_parties)
 
     return states_torch, rewards_torch
 
@@ -71,6 +78,6 @@ if __name__ == '__main__':
     from agent_mc import Policy
 
     policy = Policy()
-    number_of_parties = 100
-    states, rewards = get_batch(number_of_parties, policy)
-    print(rewards.mean())
+    policy.load("model_6")
+    number_of_parties = 1000
+    states, rewards = get_batch(number_of_parties, policy, verbose=True)

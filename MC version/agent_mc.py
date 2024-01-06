@@ -18,9 +18,9 @@ class Policy(nn.Module):
 
         # value
         self.value_input_dim = 32
-        self.value_hidden_dim = 32
+        self.value_hidden_dim = 40
         self.value_output_dim = 1
-        self.value_number_hidden_layer = 40
+        self.value_number_hidden_layer = 10  # previously 40
 
         self.fc_layers = nn.ModuleList()
 
@@ -28,10 +28,11 @@ class Policy(nn.Module):
 
         for layer in range(self.value_number_hidden_layer):
             self.fc_layers.append(nn.Linear(prev_dim, self.value_hidden_dim))
-            self.fc_layers.append(nn.ReLU())
+            self.fc_layers.append(nn.ReLU())  # previously ReLu (Sigmoid in article)
             prev_dim = self.value_hidden_dim
 
         self.fc_layers.append(nn.Linear(prev_dim, self.value_output_dim))
+        # self.fc_layers.append(nn.Sigmoid())  # previously without (in article)
 
         for layer in self.fc_layers:
             if isinstance(layer, nn.Linear):
@@ -62,14 +63,19 @@ class Policy(nn.Module):
 
         losses = []
         mean_rewards = []
+        max_mean_rewards = 0
 
         for epoch in range(num_epochs):
             # generate data
 
             states, rewards = get_batch(number_of_parties_for_batch, self)
 
-            mean_reward = float(rewards.mean())
-            mean_rewards.append(mean_reward)
+            # mean_reward = float(rewards.mean())
+            # if max_mean_rewards < mean_reward:
+            #     max_mean_rewards = mean_reward
+            #     torch.save(self.state_dict(), "model_save/model_" + str(mean_reward) + ".pt")
+            #
+            # mean_rewards.append(mean_reward)
 
             values = self.evaluate_value(states)
             loss = criterion(values.squeeze(), rewards)
@@ -83,7 +89,7 @@ class Policy(nn.Module):
             losses.append(loss)
 
             if (epoch + 1) % 1 == 0:
-                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Reward : {mean_reward:.4f}')
+                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}')  # , Reward : {mean_reward:.4f}')
                 self.save()
 
         if plot:
@@ -105,15 +111,16 @@ class Policy(nn.Module):
             plt.grid(True)
             plt.show()
 
-    def save(self):
-        torch.save(self.state_dict(), 'model_save/model_3.pt')
+    def save(self, name='model_6'):
+        torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
-    def load(self):
-        self.load_state_dict(torch.load('model_save/model_1.pt', map_location=self.device))
+    def load(self, name='model_4'):
+        self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
 
 if __name__ == '__main__':
     policy = Policy()
-    policy.load()
+    # policy.load()
     print("model load")
-    policy.train(num_epochs=100, number_of_parties_for_batch=100, plot=True)
+    policy.train(num_epochs=5000, number_of_parties_for_batch=1,
+                 plot=True)  # previously number_of_parties_for_batch=100
