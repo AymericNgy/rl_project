@@ -12,7 +12,7 @@ if __name__ == '__main__':
     model = Policy()
     model.load()
 
-    for i in range(10):
+    for i in tqdm(range(100)):
         state, cur_player = env.reset()
         done = False
         total_reward = 0
@@ -32,10 +32,17 @@ if __name__ == '__main__':
 
             action = random.choice(moves)
             state, reward, done, cur_player = env.step(action)
+
             total_reward += reward
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
-        print("finish in {} turns".format(turn))
-        rewards.append(total_reward)
+        # print("finish in {} turns".format(turn))
+
+        if first_turn_of_model == env.active:
+            final_reward = 0
+        else:
+            final_reward = 1
+
+        rewards.append(final_reward)
 
     print('Mean Reward :', sum(rewards) / len(rewards))

@@ -106,10 +106,10 @@ class Policy(nn.Module):
             plt.show()
 
     def save(self):
-        torch.save(self.state_dict(), 'model_save/model_2.pt')
+        torch.save(self.state_dict(), 'model_save/model_3.pt')
 
     def load(self):
-        self.load_state_dict(torch.load('model_save/model.pt', map_location=self.device))
+        self.load_state_dict(torch.load('model_save/model_1.pt', map_location=self.device))
 
 
 if __name__ == '__main__':

@@ -48,7 +48,8 @@ def get_batch(number_of_parties, model, verbose=False):
 
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
-        print("total turn", turn)
+        #     print("turn", turn)
+        # print(" --- total turn ---", turn)
 
         color_looser_player = env.active
         if color_looser_player == color_of_model:
