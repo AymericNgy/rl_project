@@ -31,17 +31,25 @@ if __name__ == '__main__':
                 action = random.choice(moves)
 
             action = random.choice(moves)
-            state, reward, done, cur_player = env.step(action)
+            state, reward, terminated, truncated, cur_player = env.step(action)
+
+            done = terminated or truncated
 
             total_reward += reward
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
         # print("finish in {} turns".format(turn))
 
-        if first_turn_of_model == env.active:
+        # [!] prendre en compte egalite
+        if truncated:
+            final_reward = 0.5
+            print("truncated")
+        elif first_turn_of_model == env.active:
             final_reward = 0
+            print("lose")
         else:
             final_reward = 1
+            print("win")
 
         rewards.append(final_reward)
 

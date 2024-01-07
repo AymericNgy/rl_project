@@ -19,17 +19,19 @@ UNUSED_BITS = 0b100000000100000000100000000100000000
 # [!] test new methods #
 
 class CheckerEnv:
-    def __init__(self):
+    def __init__(self, max_steps=1000):
         """
             Initiates board via new_game().
         """
         self.forward = [None, None]
         self.backward = [None, None]
         self.pieces = [None, None]
+        self.max_steps = max_steps
         self.new_game()
 
     def step(self, move):
-        done, winning_player = self.check_termination()
+        terminated, truncated, winning_player = self.check_termination()
+        done = terminated or truncated
         assert done == False  # error if step() function call but game ended
 
         self.make_move(move)
@@ -37,16 +39,19 @@ class CheckerEnv:
         current_player = self.active
 
         reward = 0
-        done, winning_player = self.check_termination()
+        terminated, truncated, winning_player = self.check_termination()
         if winning_player == "White":  # [!] can be exchanged
             reward = 1
         if winning_player == "Black":
             reward = -1
 
-        return current_state, reward, done, current_player
+        self.num_steps +=1
+
+        return current_state, reward, terminated, truncated, current_player
 
     def reset(self):
         self.new_game()
+        self.num_steps = 0
 
         current_state = self.get_state()
         current_player = self.active
@@ -67,14 +72,16 @@ class CheckerEnv:
         return state, player
 
     def check_termination(self):
-        done = self.is_over()
+        terminated = self.is_over()
+
+        truncated = self.num_steps >= self.max_steps
 
         if self.active == WHITE:
             winning_player = "Black"
         else:
             winning_player = "White"
 
-        return done, winning_player
+        return terminated, truncated, winning_player
 
     def new_game(self):
         """
@@ -82,6 +89,7 @@ class CheckerEnv:
         """
         self.active = BLACK
         self.passive = WHITE
+        self.num_steps = 0
 
         self.forward[BLACK] = 0x1eff
         self.backward[BLACK] = 0

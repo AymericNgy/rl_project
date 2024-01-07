@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def get_batch(number_of_parties, model, gamma=0.99, verbose=False):
+def get_batch(number_of_parties, model, gamma=0.99, verbose=False, nemesis_model=None):
     """
     return batch of value of states with model against random policy
     :param number_of_parties:
@@ -41,8 +41,14 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False):
                 index = model.get_index_to_act(states)
                 action = moves[index]
             else:
-                action = random.choice(moves)
-            state, reward, done, cur_player = env.step(action)
+                if nemesis_model:
+                    index = nemesis_model.get_index_to_act(states)
+                    action = moves[index]
+
+                else:
+                    action = random.choice(moves)
+            state, reward, terminated, truncated, cur_player = env.step(action)
+            done = terminated or truncated
             # total_reward += reward
 
             # save state if it was the result of the model action
@@ -54,13 +60,16 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False):
 
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
-        #     print("turn", turn)
-        # print(" --- total turn ---", turn)
+            print("turn", turn)
+        print(" --- total turn ---", turn)
 
         color_looser_player = env.active
-        if color_looser_player == color_of_model:
+
+        if truncated:  # draw : reward = 0.5
+            rewards += intermediate_rewards * 0.5
+        elif color_looser_player == color_of_model:  # lose : reward = 1
             rewards += [0] * number_new_states
-        else:
+        else:  # win : reward = 0
             intermediate_rewards.reverse()
             rewards += intermediate_rewards
             parties_win += 1
@@ -79,5 +88,5 @@ if __name__ == '__main__':
 
     policy = Policy()
     policy.load("model_6")
-    number_of_parties = 1000
-    states, rewards = get_batch(number_of_parties, policy, verbose=True)
+    number_of_parties = 20
+    states, rewards = get_batch(number_of_parties, policy, nemesis_model=policy, verbose=True)

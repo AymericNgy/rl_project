@@ -15,7 +15,8 @@ if __name__ == '__main__':
         while not done:
             moves, states = env.available_states()
             action = random.choice(moves)
-            state, reward, done, cur_player = env.step(action)
+            state, reward, terminated, truncated, cur_player = env.step(action)
+            done = terminated or truncated
             total_reward += reward
             if not env.jump:  # if not in jump session add a turn
                 turn += 1

@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 
 
 class Policy(nn.Module):
-    def __init__(self):
+    def __init__(self, nemesis_model=None):
         super().__init__()
 
         self.device = device
+
+        self.nemesis_model = nemesis_model
 
         # value
         self.value_input_dim = 32
@@ -68,7 +70,7 @@ class Policy(nn.Module):
         for epoch in range(num_epochs):
             # generate data
 
-            states, rewards = get_batch(number_of_parties_for_batch, self)
+            states, rewards = get_batch(number_of_parties_for_batch, self, nemesis_model=self.nemesis_model)
 
             # mean_reward = float(rewards.mean())
             # if max_mean_rewards < mean_reward:
@@ -111,16 +113,19 @@ class Policy(nn.Module):
             plt.grid(True)
             plt.show()
 
-    def save(self, name='model_6'):
+    def save(self, name='model_nemesis_1'):
         torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
-    def load(self, name='model_4'):
+    def load(self, name='model_6'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
 
 if __name__ == '__main__':
-    policy = Policy()
-    # policy.load()
+    nemesis_model = Policy()
+    nemesis_model.load("model_6")
+
+    policy = Policy(nemesis_model=nemesis_model)
+    policy.load()
     print("model load")
     policy.train(num_epochs=5000, number_of_parties_for_batch=1,
                  plot=True)  # previously number_of_parties_for_batch=100
