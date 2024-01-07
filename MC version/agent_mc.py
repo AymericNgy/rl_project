@@ -12,6 +12,9 @@ import matplotlib.pyplot as plt
 
 class Policy(nn.Module):
     def __init__(self, nemesis_model=None):
+        """
+        nemesis_model : enemy model used for train
+        """
         super().__init__()
 
         self.device = device

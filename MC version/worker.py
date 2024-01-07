@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def get_batch(number_of_parties, model, gamma=0.99, verbose=False, nemesis_model=None):
+def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False, nemesis_model=None):
     """
     return batch of value of states with model against random policy
     :param number_of_parties:
@@ -21,7 +21,7 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, nemesis_model
     color_of_model = first_turn_of_model
     parties_win = 0
 
-    for party in tqdm(range(number_of_parties)):
+    for party in range(number_of_parties):
 
         state, cur_player = env.reset()
         done = False
@@ -32,6 +32,9 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, nemesis_model
         cumulative_gamma = 1
 
         number_new_states = 0
+
+        if show_env:
+            print(env)
 
         while not done:
             moves, states = env.available_states()
@@ -60,19 +63,26 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, nemesis_model
 
             if not env.jump:  # if not in jump session add a turn
                 turn += 1
-            print("turn", turn)
-        print(" --- total turn ---", turn)
+            if show_env:
+                print(env)
+
+        if verbose:
+            print(" --- total turn ---", turn)
 
         color_looser_player = env.active
 
         if truncated:  # draw : reward = 0.5
-            rewards += intermediate_rewards * 0.5
-        elif color_looser_player == color_of_model:  # lose : reward = 1
+            intermediate_rewards.reverse()
+            intermediate_rewards = [value * 0.5 for value in intermediate_rewards]
+            rewards += intermediate_rewards
+
+        if color_looser_player == color_of_model:  # lose : reward = 1
             rewards += [0] * number_new_states
         else:  # win : reward = 0
             intermediate_rewards.reverse()
             rewards += intermediate_rewards
             parties_win += 1
+
 
     states_torch, rewards_torch = torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(
         model.device).float()
@@ -88,5 +98,5 @@ if __name__ == '__main__':
 
     policy = Policy()
     policy.load("model_6")
-    number_of_parties = 20
-    states, rewards = get_batch(number_of_parties, policy, nemesis_model=policy, verbose=True)
+    number_of_parties = 1
+    states, rewards = get_batch(number_of_parties, policy, nemesis_model=None, verbose=True)
