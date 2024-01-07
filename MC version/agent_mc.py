@@ -116,7 +116,7 @@ class Policy(nn.Module):
     def save(self, name='model_nemesis_1'):
         torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
-    def load(self, name='model_6'):
+    def load(self, name='model_80p'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
 

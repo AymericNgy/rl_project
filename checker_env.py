@@ -30,9 +30,9 @@ class CheckerEnv:
         self.new_game()
 
     def step(self, move):
+
         terminated, truncated, winning_player = self.check_termination()
-        done = terminated or truncated
-        assert done == False  # error if step() function call but game ended
+        assert terminated == False  # error if step() function call but game ended
 
         self.make_move(move)
         current_state = self.get_state()
@@ -45,7 +45,7 @@ class CheckerEnv:
         if winning_player == "Black":
             reward = -1
 
-        self.num_steps +=1
+        self.num_steps += 1
 
         return current_state, reward, terminated, truncated, current_player
 

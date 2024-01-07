@@ -12,6 +12,10 @@ if __name__ == '__main__':
     model = Policy()
     model.load()
 
+    wins = 0
+    loses = 0
+    draws = 0
+
     for i in tqdm(range(100)):
         state, cur_player = env.reset()
         done = False
@@ -33,7 +37,9 @@ if __name__ == '__main__':
             action = random.choice(moves)
             state, reward, terminated, truncated, cur_player = env.step(action)
 
+
             done = terminated or truncated
+
 
             total_reward += reward
             if not env.jump:  # if not in jump session add a turn
@@ -43,14 +49,15 @@ if __name__ == '__main__':
         # [!] prendre en compte egalite
         if truncated:
             final_reward = 0.5
-            print("truncated")
+            draws += 1
         elif first_turn_of_model == env.active:
             final_reward = 0
-            print("lose")
+            loses += 1
         else:
             final_reward = 1
-            print("win")
+            wins += 1
 
         rewards.append(final_reward)
 
+    print(f"wins {wins} loses {loses} draws {draws}")
     print('Mean Reward :', sum(rewards) / len(rewards))
