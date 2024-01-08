@@ -76,7 +76,7 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False
             intermediate_rewards = [value * 0.5 for value in intermediate_rewards]
             rewards += intermediate_rewards
 
-        if color_looser_player == color_of_model:  # lose : reward = 1
+        if color_looser_player == color_of_model:  # lose : reward = 1 # [???] need elif here
             rewards += [0] * number_new_states
         else:  # win : reward = 0
             intermediate_rewards.reverse()
@@ -98,5 +98,5 @@ if __name__ == '__main__':
 
     policy = Policy()
     policy.load("model_6")
-    number_of_parties = 1
+    number_of_parties = 20
     states, rewards = get_batch(number_of_parties, policy, nemesis_model=None, verbose=True)

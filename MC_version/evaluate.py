@@ -3,7 +3,11 @@ from numpy import random
 from tqdm import tqdm
 from agent_mc import Policy
 
+# DEPRECATED
+
+
 if __name__ == '__main__':
+    print("deprecated")
 
     env = CheckerEnv()
 
@@ -37,9 +41,7 @@ if __name__ == '__main__':
             action = random.choice(moves)
             state, reward, terminated, truncated, cur_player = env.step(action)
 
-
             done = terminated or truncated
-
 
             total_reward += reward
             if not env.jump:  # if not in jump session add a turn

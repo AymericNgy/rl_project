@@ -122,6 +122,9 @@ class Policy(nn.Module):
     def load(self, name='model_80p'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
+    def load_absolute(self, name):
+        self.load_state_dict(torch.load(name, map_location=self.device))
+
 
 if __name__ == '__main__':
     nemesis_model = Policy()
