@@ -169,14 +169,14 @@ if __name__ == '__main__':
     nemesis_model = agent_mc.Policy(minimax_evaluation=False)
     nemesis_model.load_absolute("MC_version/model_save/model_6.pt")
 
-    policy = agent_mc.Policy(minimax_evaluation=True)
+    policy = agent_mc.Policy(minimax_evaluation=False)
     policy.load_absolute("MC_version/model_save/model_6.pt")
 
-    number_of_parties = 30
+    number_of_parties = 200
 
     # --- END TO MODIFY ---
 
     parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
-                                                                             nemesis=None)
+                                                                             nemesis=None, verbose=True)
 
     display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean)

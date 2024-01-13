@@ -76,7 +76,7 @@ class Policy(nn.Module):
                 return 0
             else:
                 return 1
-        if env.active != self.color_of_model:  # maximizing # why !=and not ==
+        if env.active != self.color_of_model:  # maximizing #  [!] why !=and not ==
             # print("max depth", depth)
             value = -1_000_000  # -infinity
             moves, states = env.available_states()

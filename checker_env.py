@@ -19,7 +19,7 @@ UNUSED_BITS = 0b100000000100000000100000000100000000
 # [!] test new methods #
 
 class CheckerEnv:
-    def __init__(self, max_steps=1000):
+    def __init__(self, max_steps=250):
         """
             Initiates board via new_game().
         """
