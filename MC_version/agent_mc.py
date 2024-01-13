@@ -51,6 +51,7 @@ class Policy(nn.Module):
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
         self.depth_minimax = 2
+        self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
         x = state.float()
@@ -63,6 +64,7 @@ class Policy(nn.Module):
         return value of state of env according to minimax algo
         depth>=0
         """
+        # print("color of model", self.color_of_model)
         # no draw because no truncate
         if depth == 0:  # leaf
             # print("depth == 0")
@@ -102,15 +104,28 @@ class Policy(nn.Module):
 
         idx = 0
         best_move = 0
-        max_value = 0
-        for move in moves:
-            peek_env = env.peek_move(move)
-            value = self.minimax_value(peek_env, depth=self.depth_minimax - 1)
-            if value > max_value:
-                max_value = value
-                best_move = move
 
-            idx += 1
+        if not self.is_an_opponent:  # try to maximize
+
+            max_value = 0
+            for move in moves:
+                peek_env = env.peek_move(move)
+                value = self.minimax_value(peek_env, depth=self.depth_minimax - 1)
+                if value > max_value:
+                    max_value = value
+                    best_move = move
+
+                idx += 1
+        else:  # is an opponent : try to minimize
+            min_value = 10000
+            for move in moves:
+                peek_env = env.peek_move(move)
+                value = self.minimax_value(peek_env, depth=self.depth_minimax - 1)
+                if value < min_value:
+                    min_value = value
+                    best_move = move
+
+                idx += 1
 
         return best_move
 
@@ -125,7 +140,10 @@ class Policy(nn.Module):
             available_states = torch.from_numpy(np.array(states)).to(self.device)
 
             values = self.evaluate_value(available_states)
-            index = torch.argmax(values)
+            if not self.is_an_opponent:
+                index = torch.argmax(values)
+            else:
+                index = torch.argmin(values)
 
             return moves[index]
 
@@ -170,7 +188,9 @@ class Policy(nn.Module):
                 loss = loss.item()
                 losses.append(loss)
                 parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_policy(self,
-                                                                                                  number_of_parties=20, nemesis=nemesis_model,verbose=True)
+                                                                                                  number_of_parties=20,
+                                                                                                  nemesis=nemesis_model,
+                                                                                                  verbose=True)
                 print(
                     f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
                 win_means += [parties_win_mean]
@@ -211,13 +231,15 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
+    import checker_env
+
     nemesis_model = Policy(minimax_evaluation=True)
     nemesis_model.load()
+    nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
+    nemesis_model.is_an_opponent = True
 
-    policy = Policy(minimax_evaluation=True)
-    policy.load()
-
-
+    policy = Policy(minimax_evaluation=False)
+    # policy.load()
 
     model_name_save = "MC_version_nemesis_both_minimax_eval"
     policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,
