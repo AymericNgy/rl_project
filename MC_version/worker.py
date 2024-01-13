@@ -12,6 +12,7 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=Fals
     :param model:
     :return:
     """
+
     # for party in range(number_of_parties):
     states_visited = []  # states visited by the model
     rewards = []
@@ -81,14 +82,11 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=Fals
             rewards += intermediate_rewards
             parties_win += 1
 
-
     states_torch, rewards_torch = torch.from_numpy(np.array(states_visited)).to(model.device), torch.tensor(rewards).to(
         model.device).float()
 
     if verbose:
         print("get_batch -> win rate: ", parties_win / number_of_parties)
-
-
 
     return states_torch, rewards_torch
 
