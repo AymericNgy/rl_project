@@ -28,7 +28,7 @@ class Policy(nn.Module):
         self.value_input_dim = 32
         self.value_hidden_dim = 40
         self.value_output_dim = 1
-        self.value_number_hidden_layer = 2  # previously 40
+        self.value_number_hidden_layer = 10  # previously 40
 
         self.fc_layers = nn.ModuleList()
 
@@ -55,6 +55,15 @@ class Policy(nn.Module):
             x = layer(x)
         return x
 
+    def minimax_value(self, env, depth=3):
+        """
+        return value of state of env according to minimax algo
+        """
+        if depth == 0:  # leaf
+            return self.evaluate_value(env.get_state())
+
+        color_looser_player = env.active
+
     def get_index_to_act(self, available_states):
         """
         :param available_states: python list of available state
@@ -74,7 +83,6 @@ class Policy(nn.Module):
         win_means = []
         lose_means = []
         draw_means = []
-
 
         for epoch in range(num_epochs):
             # generate data
@@ -100,15 +108,14 @@ class Policy(nn.Module):
             losses.append(loss)
 
             if (epoch + 1) % 10 == 0:
-                print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}')  # , Reward : {mean_reward:.4f}')
                 self.save()
-                parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_against_random(self, number_of_parties=20)
-                win_means += parties_win_mean
-                lose_means += parties_lose_mean
-                draw_means += parties_draw_mean
-
-
-
+                parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_against_random(self,
+                                                                                                          number_of_parties=20)
+                print(
+                    f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
+                win_means += [parties_win_mean]
+                lose_means += [parties_lose_mean]
+                draw_means += [parties_draw_mean]
 
         if plot:
             plt.figure(figsize=(10, 5))
@@ -121,9 +128,9 @@ class Policy(nn.Module):
             plt.show()
 
             plt.figure(figsize=(10, 5))
-            plt.plot(win_means, label='wins')
-            plt.plot(lose_means, label='loses')
-            plt.plot(draw_means, label='draws')
+            plt.plot(losses, win_means, label='wins')
+            plt.plot(losses, lose_means, label='loses')
+            plt.plot(losses, draw_means, label='draws')
 
             plt.xlabel('Epochs')
             plt.ylabel('metrics')
@@ -132,7 +139,7 @@ class Policy(nn.Module):
             plt.grid(True)
             plt.show()
 
-    def save(self, name='model_nemesis_1'):
+    def save(self, name='model_test_init'):
         torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
     def load(self, name='model_80p'):
@@ -143,12 +150,13 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
+    # nemesis_model = Policy()
+    # nemesis_model.load()
+    #
+    # policy = Policy(nemesis_model=nemesis_model)
 
-    nemesis_model = Policy()
-    nemesis_model.load("model_6")
-
-    policy = Policy(nemesis_model=nemesis_model)
-    policy.load()
-    print("model load")
-    policy.train(num_epochs=50, number_of_parties_for_batch=1,
+    policy = Policy()
+    # policy.load()
+    # print("model load")
+    policy.train(num_epochs=5000, number_of_parties_for_batch=1,
                  plot=True)  # previously number_of_parties_for_batch=100
