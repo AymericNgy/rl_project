@@ -54,6 +54,7 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
 
 
 def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, nemesis=None):
+    # print(policy is nemesis)
     env = CheckerEnv()
 
     first_turn_of_model = 0  # [!] use it many times in code need to be global or other
@@ -172,11 +173,15 @@ if __name__ == '__main__':
     policy = agent_mc.Policy(minimax_evaluation=False)
     policy.load_absolute("MC_version/model_save/model_6.pt")
 
-    number_of_parties = 200
+    number_of_parties = 100
+
+
+
+    parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
+                                                                             nemesis=policy, verbose=True)
 
     # --- END TO MODIFY ---
 
-    parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
-                                                                             nemesis=None, verbose=True)
+    print(f'Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
 
     display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean)

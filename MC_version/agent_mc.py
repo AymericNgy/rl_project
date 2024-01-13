@@ -14,15 +14,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class Policy(nn.Module):
-    def __init__(self, nemesis_model=None, minimax_evaluation=False):
+    def __init__(self, minimax_evaluation=False):
         """
         nemesis_model : enemy model used for train
         """
         super().__init__()
 
         self.device = device
-
-        self.nemesis_model = nemesis_model
 
         # value
         self.value_input_dim = 32
@@ -52,7 +50,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 3
+        self.depth_minimax = 2
 
     def evaluate_value(self, state):
         x = state.float()
@@ -134,7 +132,8 @@ class Policy(nn.Module):
         else:  # MINIMAX
             return self.get_move_to_act_from_minimax(env)
 
-    def train(self, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False):
+    def train(self, model_name_save, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False,
+              nemesis_model=None):
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self.parameters(), lr=learning_rate)
 
@@ -143,11 +142,13 @@ class Policy(nn.Module):
         win_means = []
         lose_means = []
         draw_means = []
+        epochs = []
 
         for epoch in range(num_epochs):
+            print(f"--- epoch {epoch} ---")
             # generate data
 
-            states, rewards = get_batch(number_of_parties_for_batch, self, nemesis_model=self.nemesis_model)
+            states, rewards = get_batch(number_of_parties_for_batch, self, nemesis_model=nemesis_model)
 
             # mean_reward = float(rewards.mean())
             # if max_mean_rewards < mean_reward:
@@ -164,22 +165,22 @@ class Policy(nn.Module):
             loss.backward()
             optimizer.step()
 
-            loss = loss.item()
-            losses.append(loss)
-
-            if (epoch + 1) % 10 == 0:
-                self.save()
+            if epoch % 200 == 0:
+                self.save(name=model_name_save)
+                loss = loss.item()
+                losses.append(loss)
                 parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_policy(self,
-                                                                                                  number_of_parties=20)
+                                                                                                  number_of_parties=20, nemesis=nemesis_model,verbose=True)
                 print(
                     f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
                 win_means += [parties_win_mean]
                 lose_means += [parties_lose_mean]
                 draw_means += [parties_draw_mean]
+                epochs.append(epoch)
 
         if plot:
             plt.figure(figsize=(10, 5))
-            plt.plot(losses, label='Training Loss')
+            plt.plot(epochs, losses, label='Training Loss')
             plt.xlabel('Epochs')
             plt.ylabel('Loss')
             plt.title('Training Loss Over Epochs')
@@ -188,9 +189,9 @@ class Policy(nn.Module):
             plt.show()
 
             plt.figure(figsize=(10, 5))
-            plt.plot(losses, win_means, label='wins')
-            plt.plot(losses, lose_means, label='loses')
-            plt.plot(losses, draw_means, label='draws')
+            plt.plot(epochs, win_means, label='wins')
+            plt.plot(epochs, lose_means, label='loses')
+            plt.plot(epochs, draw_means, label='draws')
 
             plt.xlabel('Epochs')
             plt.ylabel('metrics')
@@ -199,10 +200,10 @@ class Policy(nn.Module):
             plt.grid(True)
             plt.show()
 
-    def save(self, name='model_test_init'):
+    def save(self, name='model_default_save'):
         torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
-    def load(self, name='model_80p'):
+    def load(self, name='model_6'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
     def load_absolute(self, name):
@@ -210,13 +211,14 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
-    # nemesis_model = Policy()
-    # nemesis_model.load()
-    #
-    # policy = Policy(nemesis_model=nemesis_model)
+    nemesis_model = Policy(minimax_evaluation=True)
+    nemesis_model.load()
 
-    policy = Policy()
-    # policy.load()
-    # print("model load")
-    policy.train(num_epochs=5000, number_of_parties_for_batch=1,
-                 plot=True)  # previously number_of_parties_for_batch=100
+    policy = Policy(minimax_evaluation=True)
+    policy.load()
+
+
+
+    model_name_save = "MC_version_nemesis_both_minimax_eval"
+    policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,
+                 plot=True, nemesis_model=nemesis_model)  # previously number_of_parties_for_batch=100

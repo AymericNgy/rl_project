@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 
 
-def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False, nemesis_model=None):
+def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=False, nemesis_model=None):
     """
     return batch of value of states with model against random policy
     :param number_of_parties:
@@ -72,9 +72,9 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False
         if truncated:  # draw : reward = 0.5
             intermediate_rewards.reverse()
             intermediate_rewards = [value * 0.5 for value in intermediate_rewards]
-            rewards += intermediate_rewards
 
-        if color_looser_player == color_of_model:  # lose : reward = 1 # [???] need elif here
+            rewards += intermediate_rewards
+        elif color_looser_player == color_of_model:  # lose : reward = 1 # [???] need elif here
             rewards += [0] * number_new_states
         else:  # win : reward = 0
             intermediate_rewards.reverse()
@@ -87,6 +87,8 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False
 
     if verbose:
         print("get_batch -> win rate: ", parties_win / number_of_parties)
+
+
 
     return states_torch, rewards_torch
 
