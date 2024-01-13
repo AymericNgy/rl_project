@@ -475,3 +475,12 @@ class CheckerEnv:
                             " " + str(1 + j + 8 * i) + (' ' if j + 8 * i < 9 else '')
 
         return "".join(map(lambda x: "".join(x), board))
+
+if __name__ == '__main__':
+    import sys
+    env = CheckerEnv()
+
+    taille_instance = sys.getsizeof(env)
+
+    print(f"La taille mémoire de l'instance est de {taille_instance} octets.")
+

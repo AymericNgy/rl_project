@@ -41,12 +41,10 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False,show_env=False
 
             # choose action
             if turn % 2 == first_turn_of_model:
-                index = model.get_index_to_act(states)
-                action = moves[index]
+                action = model.get_move_to_act(env)
             else:
                 if nemesis_model:
-                    index = nemesis_model.get_index_to_act(states)
-                    action = moves[index]
+                    action = nemesis_model.get_move_to_act(env)
 
                 else:
                     action = random.choice(moves)

@@ -14,7 +14,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class Policy(nn.Module):
-    def __init__(self, nemesis_model=None):
+    def __init__(self, nemesis_model=None, minimax_evaluation=False):
         """
         nemesis_model : enemy model used for train
         """
@@ -49,6 +49,11 @@ class Policy(nn.Module):
 
         self.to(self.device)
 
+        self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
+        self.color_of_model = self.first_turn_of_model
+        self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
+        self.depth_minimax = 1
+
     def evaluate_value(self, state):
         x = state.float()
         for layer in self.fc_layers:
@@ -58,21 +63,76 @@ class Policy(nn.Module):
     def minimax_value(self, env, depth=3):
         """
         return value of state of env according to minimax algo
+        depth>=0
         """
+        # no draw because no truncate
         if depth == 0:  # leaf
-            return self.evaluate_value(env.get_state())
+            # print("depth == 0")
+            return self.evaluate_value(torch.from_numpy(env.get_state()).to(device))
+        if env.is_over():
+            # print("en_is_over")
+            color_looser_player = env.active
+            if color_looser_player == self.color_of_model:
+                return 0
+            else:
+                return 1
+        if env.active == self.color_of_model:  # maximizing
+            # print("max depth", depth)
+            value = -1_000_000  # -infinity
+            moves, states = env.available_states()
+            for move in moves:
+                value = max(value, self.minimax_value(env.peek_move(move), depth - 1))
+        else:  # minimizing
+            # print("min depth", depth)
+            value = 1_000_000  # infinity
+            moves, states = env.available_states()
+            for move in moves:
+                value = min(value, self.minimax_value(env.peek_move(move), depth - 1))
 
-        color_looser_player = env.active
+        return value
 
-    def get_index_to_act(self, available_states):
+    def get_index_to_act_from_minimax(self, env):
         """
-        :param available_states: python list of available state
+        supppse env is not end
         :return: index of the chosen action
         """
-        available_states = torch.from_numpy(np.array(available_states)).to(self.device)
-        values = self.evaluate_value(available_states)
+        # [!] can not work because function return index not corresponding to the sent available_states in get_index_to_act
+        if env.is_over():
+            raise RuntimeError("game not suppose to be over")
 
-        return torch.argmax(values)
+        moves, states = env.available_states()
+
+        idx = 0
+        index_to_act = 0
+        max_value = 0
+        for move in moves:
+            peek_env = env.peek_move(move)
+            value = self.minimax_value(peek_env, depth=self.depth_minimax - 1)
+            if value > max_value:
+                max_value = value
+                index_to_act = idx
+
+            idx += 1
+
+        return index_to_act
+
+    def get_move_to_act(self, env):
+        """
+        :param available_states: python list of available state
+        :return: move
+        """
+
+        if not self.minimax_evaluation:
+            moves, states = env.available_states()
+            available_states = torch.from_numpy(np.array(states)).to(self.device)
+
+            values = self.evaluate_value(available_states)
+            index = torch.argmax(values)
+
+            return moves[index]
+
+        else:  # MINIMAX
+            return self.get_index_to_act_from_minimax(env)
 
     def train(self, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False):
         criterion = nn.MSELoss()

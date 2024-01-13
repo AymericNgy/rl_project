@@ -33,8 +33,7 @@ if __name__ == '__main__':
 
             # choose action
             if turn % 2 == first_turn_of_model:
-                index = model.get_index_to_act(states)
-                action = moves[index]
+                action = model.get_move_to_act(env)
             else:
                 action = random.choice(moves)
 
