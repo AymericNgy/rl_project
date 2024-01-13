@@ -52,7 +52,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 2
+        self.depth_minimax = 3
 
     def evaluate_value(self, state):
         x = state.float()
@@ -169,8 +169,8 @@ class Policy(nn.Module):
 
             if (epoch + 1) % 10 == 0:
                 self.save()
-                parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_against_random(self,
-                                                                                                          number_of_parties=20)
+                parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_policy(self,
+                                                                                                  number_of_parties=20)
                 print(
                     f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
                 win_means += [parties_win_mean]

@@ -480,6 +480,16 @@ if __name__ == '__main__':
     import sys
     env = CheckerEnv()
 
+    print(env.get_state())
+
+    moves, states = env.available_states()
+    env.make_move(moves[0])
+    print(env.get_state())
+
+    moves, states = env.available_states()
+    env.make_move(moves[0])
+    print(env.get_state())
+
     taille_instance = sys.getsizeof(env)
 
     print(f"La taille mémoire de l'instance est de {taille_instance} octets.")

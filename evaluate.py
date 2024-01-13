@@ -12,7 +12,7 @@ import torch
 import time
 
 
-def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False):
+def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False, nemesis=None):
     state, cur_player = env.reset()
     done = False
     turn = 0
@@ -27,7 +27,10 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
         if turn % 2 == first_turn_of_model:
             action = policy.get_move_to_act(env)
         else:
-            action = random.choice(moves)
+            if nemesis == None:
+                action = random.choice(moves)
+            else:
+                action = nemesis.get_move_to_act(env)
         state, reward, terminated, truncated, cur_player = env.step(action)
         done = terminated or truncated
         # total_reward += reward
@@ -50,7 +53,7 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
         return "party win"
 
 
-def evaluate_against_random_single(policy, number_of_parties, show_env=False, verbose=False):
+def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, nemesis=None):
     env = CheckerEnv()
 
     first_turn_of_model = 0  # [!] use it many times in code need to be global or other
@@ -59,9 +62,8 @@ def evaluate_against_random_single(policy, number_of_parties, show_env=False, ve
     parties_lose = 0
     parties_draw = 0
 
-
     for party in tqdm(range(number_of_parties)):
-        res = play_party(policy, env, first_turn_of_model, color_of_model, show_env, verbose)
+        res = play_party(policy, env, first_turn_of_model, color_of_model, show_env, verbose, nemesis)
         if res == "party draw":
             parties_draw += 1
         if res == "party lose":
@@ -98,13 +100,13 @@ def evaluate_against_random_single(policy, number_of_parties, show_env=False, ve
 #                 print(f"Thread {id_thread} a levé une exception: {e}")
 
 
-def evaluate_against_random(policy, number_of_parties=500, thread_number=5, show_env=False, verbose=False):
+def evaluate_against_random_thread(policy, number_of_parties=500, thread_number=5, show_env=False, verbose=False):
     start_time = time.time()
     parties_per_thread = number_of_parties // thread_number
     print(parties_per_thread)
     with ThreadPoolExecutor(max_workers=thread_number) as executor:
         # Créez des tâches pour évaluer la politique dans différents threads
-        futures = [executor.submit(evaluate_against_random_single, policy, parties_per_thread, show_env, verbose) for _
+        futures = [executor.submit(evaluate_policy, policy, parties_per_thread, show_env, verbose) for _
                    in
                    range(thread_number)]
 
@@ -125,30 +127,7 @@ def evaluate_against_random(policy, number_of_parties=500, thread_number=5, show
         return parties_lose_mean, parties_win_mean, parties_draw_mean
 
 
-if __name__ == '__main__':
-
-    # deal with MC_version module
-    mc_version_path = 'MC_version'
-
-    # Ajoutez le chemin d'accès à sys.path
-    if mc_version_path not in sys.path:
-        sys.path.append(mc_version_path)
-
-    # Maintenant, essayez d'importer le module
-    import agent_mc
-
-    policy = agent_mc.Policy(minimax_evaluation=True)
-
-    # --- TO MODIFY ---
-
-    policy.load_absolute("MC_version/model_save/model_6.pt")
-
-    number_of_parties = 100
-
-    # --- END TO MODIFY ---
-
-    parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_against_random_single(policy, number_of_parties)
-
+def display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean):
     # Étiquettes pour les tranches du camembert
     labels = ['Lose', 'Win', 'Draw']
 
@@ -171,3 +150,33 @@ if __name__ == '__main__':
     # Afficher le camembert
     plt.axis('equal')  # Assurez-vous que le camembert est circulaire
     plt.show()
+
+
+if __name__ == '__main__':
+
+    # deal with MC_version module
+    mc_version_path = 'MC_version'
+
+    # Ajoutez le chemin d'accès à sys.path
+    if mc_version_path not in sys.path:
+        sys.path.append(mc_version_path)
+
+    # Maintenant, essayez d'importer le module
+    import agent_mc
+
+    # --- TO MODIFY ---
+
+    nemesis_model = agent_mc.Policy(minimax_evaluation=False)
+    nemesis_model.load_absolute("MC_version/model_save/model_6.pt")
+
+    policy = agent_mc.Policy(minimax_evaluation=True)
+    policy.load_absolute("MC_version/model_save/model_6.pt")
+
+    number_of_parties = 30
+
+    # --- END TO MODIFY ---
+
+    parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
+                                                                             nemesis=None)
+
+    display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean)

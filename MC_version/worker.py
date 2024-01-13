@@ -95,6 +95,6 @@ if __name__ == '__main__':
     from agent_mc import Policy
 
     policy = Policy()
-    policy.load("model_6")
+    policy.load("model_6", )
     number_of_parties = 20
     states, rewards = get_batch(number_of_parties, policy, nemesis_model=None, verbose=True)
