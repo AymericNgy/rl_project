@@ -52,7 +52,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 1
+        self.depth_minimax = 2
 
     def evaluate_value(self, state):
         x = state.float()
@@ -76,7 +76,7 @@ class Policy(nn.Module):
                 return 0
             else:
                 return 1
-        if env.active == self.color_of_model:  # maximizing
+        if env.active != self.color_of_model:  # maximizing # why !=and not ==
             # print("max depth", depth)
             value = -1_000_000  # -infinity
             moves, states = env.available_states()
@@ -91,7 +91,7 @@ class Policy(nn.Module):
 
         return value
 
-    def get_index_to_act_from_minimax(self, env):
+    def get_move_to_act_from_minimax(self, env):
         """
         supppse env is not end
         :return: index of the chosen action
@@ -103,18 +103,18 @@ class Policy(nn.Module):
         moves, states = env.available_states()
 
         idx = 0
-        index_to_act = 0
+        best_move = 0
         max_value = 0
         for move in moves:
             peek_env = env.peek_move(move)
             value = self.minimax_value(peek_env, depth=self.depth_minimax - 1)
             if value > max_value:
                 max_value = value
-                index_to_act = idx
+                best_move = move
 
             idx += 1
 
-        return index_to_act
+        return best_move
 
     def get_move_to_act(self, env):
         """
@@ -132,7 +132,7 @@ class Policy(nn.Module):
             return moves[index]
 
         else:  # MINIMAX
-            return self.get_index_to_act_from_minimax(env)
+            return self.get_move_to_act_from_minimax(env)
 
     def train(self, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False):
         criterion = nn.MSELoss()
