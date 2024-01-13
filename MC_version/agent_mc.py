@@ -4,10 +4,13 @@ import torch.optim as optim
 import numpy as np
 import torch.nn.init as init
 from worker import get_batch
+import sys
+import os
+import matplotlib.pyplot as plt
+
+import evaluate
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-import matplotlib.pyplot as plt
 
 
 class Policy(nn.Module):
@@ -25,7 +28,7 @@ class Policy(nn.Module):
         self.value_input_dim = 32
         self.value_hidden_dim = 40
         self.value_output_dim = 1
-        self.value_number_hidden_layer = 10  # previously 40
+        self.value_number_hidden_layer = 2  # previously 40
 
         self.fc_layers = nn.ModuleList()
 
@@ -66,9 +69,12 @@ class Policy(nn.Module):
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self.parameters(), lr=learning_rate)
 
+        # metrics
         losses = []
-        mean_rewards = []
-        max_mean_rewards = 0
+        win_means = []
+        lose_means = []
+        draw_means = []
+
 
         for epoch in range(num_epochs):
             # generate data
@@ -93,9 +99,16 @@ class Policy(nn.Module):
             loss = loss.item()
             losses.append(loss)
 
-            if (epoch + 1) % 1 == 0:
+            if (epoch + 1) % 10 == 0:
                 print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}')  # , Reward : {mean_reward:.4f}')
                 self.save()
+                parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_against_random(self, number_of_parties=20)
+                win_means += parties_win_mean
+                lose_means += parties_lose_mean
+                draw_means += parties_draw_mean
+
+
+
 
         if plot:
             plt.figure(figsize=(10, 5))
@@ -108,10 +121,13 @@ class Policy(nn.Module):
             plt.show()
 
             plt.figure(figsize=(10, 5))
-            plt.plot(mean_rewards, label='mean reward')
+            plt.plot(win_means, label='wins')
+            plt.plot(lose_means, label='loses')
+            plt.plot(draw_means, label='draws')
+
             plt.xlabel('Epochs')
-            plt.ylabel('Mean reward')
-            plt.title('Reward Over Epochs')
+            plt.ylabel('metrics')
+            plt.title('win, lose and draw Over Epochs')
             plt.legend()
             plt.grid(True)
             plt.show()
@@ -127,11 +143,12 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
+
     nemesis_model = Policy()
     nemesis_model.load("model_6")
 
     policy = Policy(nemesis_model=nemesis_model)
     policy.load()
     print("model load")
-    policy.train(num_epochs=5000, number_of_parties_for_batch=1,
+    policy.train(num_epochs=50, number_of_parties_for_batch=1,
                  plot=True)  # previously number_of_parties_for_batch=100
