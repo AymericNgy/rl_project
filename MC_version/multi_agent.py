@@ -6,17 +6,27 @@ from worker import get_batch
 import torch.optim as optim
 import evaluate
 import copy
+import numpy as np
 
 
 class MultiAgent(Policy):
     def __init__(self, list_policy):
         self.list_policy = list_policy
+        self.lambda_param = 0.9 # probability distribution to sample policies
+        self.distribution = np.array([1])
 
     def add_policy(self, policy):
         self.list_policy.append(policy)
 
+        # update probability distribution
+        weight = [self.lambda_param**i for i in range(len(self.list_policy))]
+        weight = np.array(weight)
+        self.distribution = weight/np.sum(weight)
+
     def get_move_to_act(self, env):
-        policy = random.choice(self.list_policy)
+        index_choisi = np.random.choice(len(self.distribution), size=1, p=self.distribution)[0]
+        policy = self.list_policy[index_choisi]
+        # print(f"index policy : {index_choisi}/{len(self.distribution)-1}")
         return policy.get_move_to_act(env)
 
 
@@ -24,6 +34,7 @@ class TunedPolicy(Policy):
 
     def __init__(self, minimax_evaluation=False):
         super().__init__(minimax_evaluation)
+
 
     def train(self, learning_rate=0.01, plot=False,
               nemesis_model=None):
