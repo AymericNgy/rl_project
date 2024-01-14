@@ -50,7 +50,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 2
+        self.depth_minimax = 3
         self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
@@ -181,12 +181,14 @@ class Policy(nn.Module):
             loss.backward()
             optimizer.step()
 
-            if epoch % 10 == 0:
+            print(f"Epoch {epoch}")
+
+            if epoch % 100 == 0:
                 self.save(name=model_name_save)
                 loss = loss.item()
                 losses.append(loss)
                 parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_policy(self,
-                                                                                                  number_of_parties=1,
+                                                                                                  number_of_parties=10,
                                                                                                   nemesis=nemesis_model,
                                                                                                   verbose=False)
                 print(
@@ -229,16 +231,19 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
+    from mcts import MCTS
     import checker_env
 
-    nemesis_model = Policy(minimax_evaluation=False)
-    nemesis_model.load("MC_version_nemesis_both_normal")
-    nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
-    nemesis_model.is_an_opponent = True
+    # nemesis_model = Policy(minimax_evaluation=False)
+    # nemesis_model.load("MC_version_nemesis_both_normal")
+    # nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
+    # nemesis_model.is_an_opponent = True
 
-    policy = Policy(minimax_evaluation=True)
+    nemesis_model = MCTS()
+
+    policy = Policy(minimax_evaluation=False)
     policy.load()
 
-    model_name_save = "MC_version_nemesis_both_normal_recursion_2"
+    model_name_save = "MC_version_nemesis_MCTS_50iterMean"
     policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,
                  plot=True, nemesis_model=nemesis_model)  # previously number_of_parties_for_batch=100

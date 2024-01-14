@@ -181,10 +181,10 @@ if __name__ == '__main__':
 
     nemesis_model = MCTS()
 
-    policy = Policy(minimax_evaluation=False)
+    policy = Policy(minimax_evaluation=True)
     policy.load_absolute("model_save/model_6.pt")
 
-    number_of_parties = 30
+    number_of_parties = 10
 
 
 

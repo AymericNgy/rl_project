@@ -12,6 +12,8 @@ import math
 
 random_iters = [30, 35, 40, 45, 50, 55, 60, 65, 70]
 
+random_iters = [50]
+
 
 # random_iters = None
 
@@ -110,14 +112,13 @@ class MCTSNode:
 
 
 def mcts(state, iters=10):
-
     if random_iters:
         iters = np.random.choice(random_iters)
+
 
     root = MCTSNode(deepcopy(state))
 
     for i in range(iters):
-
         leaf = root.traverse()
         simulation_result = leaf.rollout()
         leaf.backpropagate(simulation_result)
