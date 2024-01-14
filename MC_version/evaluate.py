@@ -1,3 +1,5 @@
+import copy
+
 from checker_env import CheckerEnv
 from numpy import random
 
@@ -10,7 +12,6 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import torch
 import time
-
 
 
 def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False, nemesis=None):
@@ -41,9 +42,6 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
         if show_env:
             print(env)
 
-
-
-
     if verbose:
         print(" --- total turn ---", turn)
 
@@ -58,7 +56,9 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
 
 
 def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, nemesis=None):
-    # print(policy is nemesis)
+    if nemesis:
+        nemesis.is_an_opponent = True
+        nemesis.color_of_model = 1  # [!] depending on if first
 
     env = CheckerEnv()
 
@@ -76,7 +76,6 @@ def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, ne
             parties_lose += 1
         if res == "party win":
             parties_win += 1
-
 
     parties_lose_mean = parties_lose / number_of_parties
     parties_win_mean = parties_win / number_of_parties
@@ -160,7 +159,6 @@ def display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean):
 
 
 if __name__ == '__main__':
-
     from agent_mc import Policy
     from mcts import MCTS
 
@@ -181,17 +179,20 @@ if __name__ == '__main__':
 
     nemesis_model = MCTS()
 
-    policy = Policy(minimax_evaluation=True)
-    policy.load_absolute("model_save/model_6.pt")
+    # policy = Policy(minimax_evaluation=False, depth_minimax=3)
+    # policy.load_absolute("model_pull/model_80p.pt")
 
-    number_of_parties = 10
+    policy = copy.deepcopy(nemesis_model)
 
-
+    number_of_parties = 1
 
     parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
                                                                              nemesis=nemesis_model, verbose=True)
 
     # --- END TO MODIFY ---
+
+    plt.plot(nemesis_model.execution_times)
+    plt.yscale('log')
 
     print(f'Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
 

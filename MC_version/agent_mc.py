@@ -3,8 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import torch.nn.init as init
-from worker import get_batch
+from get_batch import get_batch
 import matplotlib.pyplot as plt
+from utile import execution_time
 
 import evaluate
 
@@ -12,7 +13,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class Policy(nn.Module):
-    def __init__(self, minimax_evaluation=False):
+    def __init__(self, minimax_evaluation=False, depth_minimax=2):
         """
         nemesis_model : enemy model used for train
 
@@ -50,7 +51,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 2
+        self.depth_minimax = depth_minimax
         self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
@@ -124,6 +125,7 @@ class Policy(nn.Module):
 
         return best_move
 
+    @execution_time
     def get_move_to_act(self, env):
         """
         :param available_states: python list of available state
@@ -144,6 +146,7 @@ class Policy(nn.Module):
 
         else:  # MINIMAX
             return self.get_move_to_act_from_minimax(env)
+
 
     def train(self, model_name_save, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False,
               nemesis_model=None):
@@ -226,7 +229,6 @@ class Policy(nn.Module):
     def save_absolute(self, name):
         torch.save(self.state_dict(), name)
 
-
     def load(self, name='model_6'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
@@ -235,6 +237,8 @@ class Policy(nn.Module):
 
 
 if __name__ == '__main__':
+    # --- TRAIN ---
+
     from mcts import MCTS
     import checker_env
 
@@ -243,11 +247,11 @@ if __name__ == '__main__':
     # nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
     # nemesis_model.is_an_opponent = True
 
-    # nemesis_model = MCTS()
+    nemesis_model = MCTS()
 
     policy = Policy(minimax_evaluation=False)
     policy.load()
 
-    model_name_save = "MC_version_nemesis_MCTS_50iterMean"
+    model_name_save = "MC_multi_agent_nemesis_MCTS_50iterMean"
     policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,
                  plot=True, nemesis_model=nemesis_model)  # previously number_of_parties_for_batch=100

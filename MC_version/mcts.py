@@ -3,6 +3,7 @@ from mcts_essai2 import MCTSNode
 from mcts_essai2 import mcts
 from plateau_essai2 import copyEnvMCtoMCTS
 from copy import deepcopy
+from utile import execution_time
 
 
 class MCTS(Policy):
@@ -19,6 +20,7 @@ class MCTS(Policy):
     def get_move_to_act_from_minimax(self, env):
         raise RuntimeError("cannot be used with MCTS")
 
+    @execution_time
     def get_move_to_act(self, env):
         env_MCTS = copyEnvMCtoMCTS(env)
 

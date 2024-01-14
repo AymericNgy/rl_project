@@ -12,7 +12,7 @@ import numpy as np
 class MultiAgent(Policy):
     def __init__(self, list_policy):
         self.list_policy = list_policy
-        self.lambda_param = 0.9 # probability distribution to sample policies
+        self.lambda_param = 0.5 # probability distribution to sample policies
         self.distribution = np.array([1])
 
     def add_policy(self, policy):
@@ -55,7 +55,7 @@ class TunedPolicy(Policy):
 
         win_rate_treshold = 0.9
 
-        iteration = 20
+        iteration = 1000
 
         for i in range(iteration):
             print(f"--- Iteration {i} ---")

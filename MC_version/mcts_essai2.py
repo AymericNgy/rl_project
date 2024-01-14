@@ -111,9 +111,9 @@ class MCTSNode:
         return self.children[child]
 
 
-def mcts(state, iters=10):
-    if random_iters:
-        iters = np.random.choice(random_iters)
+def mcts(state, iters=200):
+    # if random_iters:
+    #     iters = np.random.choice(random_iters)
 
 
     root = MCTSNode(deepcopy(state))
