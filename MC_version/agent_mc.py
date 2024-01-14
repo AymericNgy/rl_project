@@ -50,7 +50,7 @@ class Policy(nn.Module):
         self.first_turn_of_model = 0  # [!] use it many times in code need to be global or other
         self.color_of_model = self.first_turn_of_model
         self.minimax_evaluation = minimax_evaluation  # if True : evaluation use minimax (impact on training when metrics collected)
-        self.depth_minimax = 3
+        self.depth_minimax = 2
         self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
@@ -223,6 +223,10 @@ class Policy(nn.Module):
     def save(self, name='model_default_save'):
         torch.save(self.state_dict(), 'model_save/' + name + '.pt')
 
+    def save_absolute(self, name):
+        torch.save(self.state_dict(), name)
+
+
     def load(self, name='model_6'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
@@ -239,7 +243,7 @@ if __name__ == '__main__':
     # nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
     # nemesis_model.is_an_opponent = True
 
-    nemesis_model = MCTS()
+    # nemesis_model = MCTS()
 
     policy = Policy(minimax_evaluation=False)
     policy.load()

@@ -177,7 +177,7 @@ if __name__ == '__main__':
     # --- TO MODIFY ---
 
     # nemesis_model = Policy(minimax_evaluation=False)
-    # nemesis_model.load_absolute("model_save/model_6.pt")
+    # nemesis_model.load_absolute("model_pull/model_80p.pt")
 
     nemesis_model = MCTS()
 
