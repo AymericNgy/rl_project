@@ -12,6 +12,7 @@ import torch
 import time
 
 
+
 def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False, nemesis=None):
     state, cur_player = env.reset()
     done = False
@@ -40,6 +41,9 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
         if show_env:
             print(env)
 
+
+
+
     if verbose:
         print(" --- total turn ---", turn)
 
@@ -55,6 +59,7 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
 
 def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, nemesis=None):
     # print(policy is nemesis)
+
     env = CheckerEnv()
 
     first_turn_of_model = 0  # [!] use it many times in code need to be global or other
@@ -71,6 +76,7 @@ def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, ne
             parties_lose += 1
         if res == "party win":
             parties_win += 1
+
 
     parties_lose_mean = parties_lose / number_of_parties
     parties_win_mean = parties_win / number_of_parties
@@ -155,30 +161,35 @@ def display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean):
 
 if __name__ == '__main__':
 
-    # deal with MC_version module
-    mc_version_path = 'MC_version'
+    from agent_mc import Policy
+    from mcts import MCTS
 
-    # Ajoutez le chemin d'accès à sys.path
-    if mc_version_path not in sys.path:
-        sys.path.append(mc_version_path)
-
-    # Maintenant, essayez d'importer le module
-    import agent_mc
+    # # deal with MC_version module
+    # mc_version_path = 'MC_version'
+    #
+    # # Ajoutez le chemin d'accès à sys.path
+    # if mc_version_path not in sys.path:
+    #     sys.path.append(mc_version_path)
+    #
+    # # Maintenant, essayez d'importer le module
+    # import agent_mc
 
     # --- TO MODIFY ---
 
-    nemesis_model = agent_mc.Policy(minimax_evaluation=False)
-    nemesis_model.load_absolute("MC_version/model_save/model_6.pt")
+    # nemesis_model = Policy(minimax_evaluation=False)
+    # nemesis_model.load_absolute("model_save/model_6.pt")
 
-    policy = agent_mc.Policy(minimax_evaluation=False)
-    policy.load_absolute("MC_version/model_save/model_6.pt")
+    nemesis_model = MCTS()
 
-    number_of_parties = 100
+    policy = Policy(minimax_evaluation=False)
+    policy.load_absolute("model_save/model_6.pt")
+
+    number_of_parties = 30
 
 
 
     parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
-                                                                             nemesis=policy, verbose=True)
+                                                                             nemesis=nemesis_model, verbose=True)
 
     # --- END TO MODIFY ---
 

@@ -4,8 +4,6 @@ import torch.optim as optim
 import numpy as np
 import torch.nn.init as init
 from worker import get_batch
-import sys
-import os
 import matplotlib.pyplot as plt
 
 import evaluate
@@ -163,7 +161,7 @@ class Policy(nn.Module):
         epochs = []
 
         for epoch in range(num_epochs):
-            print(f"--- epoch {epoch} ---")
+
             # generate data
 
             states, rewards = get_batch(number_of_parties_for_batch, self, nemesis_model=nemesis_model)
@@ -190,7 +188,7 @@ class Policy(nn.Module):
                 parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate.evaluate_policy(self,
                                                                                                   number_of_parties=1,
                                                                                                   nemesis=nemesis_model,
-                                                                                                  verbose=True)
+                                                                                                  verbose=False)
                 print(
                     f'Epoch [{epoch + 1}/{num_epochs}], Loss: {loss:.4f}, Win: {parties_win_mean:.4f}, Draw : {parties_draw_mean}, Lose : {parties_lose_mean}')
                 win_means += [parties_win_mean]
@@ -234,13 +232,13 @@ if __name__ == '__main__':
     import checker_env
 
     nemesis_model = Policy(minimax_evaluation=False)
-    nemesis_model.load()
+    nemesis_model.load("MC_version_nemesis_both_normal")
     nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
     nemesis_model.is_an_opponent = True
 
-    policy = Policy(minimax_evaluation=False)
+    policy = Policy(minimax_evaluation=True)
     policy.load()
 
-    model_name_save = "MC_version_nemesis_both_normal"
+    model_name_save = "MC_version_nemesis_both_normal_recursion_2"
     policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,
                  plot=True, nemesis_model=nemesis_model)  # previously number_of_parties_for_batch=100

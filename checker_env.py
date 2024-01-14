@@ -38,6 +38,8 @@ class CheckerEnv:
         current_state = self.get_state()
         current_player = self.active
 
+        self.num_steps += 1
+
         reward = 0
         terminated, truncated, winning_player = self.check_termination()
         if winning_player == "White":  # [!] can be exchanged
@@ -45,7 +47,7 @@ class CheckerEnv:
         if winning_player == "Black":
             reward = -1
 
-        self.num_steps += 1
+
 
         return current_state, reward, terminated, truncated, current_player
 
