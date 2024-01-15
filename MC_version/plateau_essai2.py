@@ -19,6 +19,9 @@ UNUSED_BITS = 0b100000000100000000100000000100000000
 # [!] test new methods #
 
 class CheckerEnvForMCTS:
+    """
+    checker environment for MCTS
+    """
     def __init__(self, max_steps=250):
         """
             Initiates board via new_game().
@@ -49,9 +52,6 @@ class CheckerEnvForMCTS:
 
         return self, reward, terminated, current_player
 
-    # def reset(self):
-    #     self.new_game()
-    #     self.num_steps = 0
 
     def virtual_step(self, move):
         """
@@ -478,6 +478,11 @@ class CheckerEnvForMCTS:
 
 
 def copyEnvMCtoMCTS(instanceCheckerEnvMC):
+    """
+    copy instance of CheckerEnvMC to CheckerEnvForMCTS
+    :param instanceCheckerEnvMC: instance of CheckerEnv
+    :return: instance of CheckerEnvForMCTS
+    """
     output = CheckerEnvForMCTS()
 
     output.forward = instanceCheckerEnvMC.forward
@@ -505,6 +510,6 @@ if __name__ == '__main__':
 
     env = CheckerEnvForMCTS()
 
-    taille_instance = sys.getsizeof(env)
+    size_instance = sys.getsizeof(env)
 
-    print(f"La taille mémoire de l'instance est de {taille_instance} octets.")
+    print(f"size of instance : {size_instance} bytes.")

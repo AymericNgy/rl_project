@@ -7,15 +7,9 @@ import random
 from plateau_essai2 import *
 import math
 
-# je conserve le truc de aymeric pareil par contre je modif le code : faut juste se dire que le plateau entier (le state) est un instance de checker_env et donc contient tout (player, jump ...)
-# class TicTacToe:
-
+# to perform random iterations in mcts
 random_iters = [30, 35, 40, 45, 50, 55, 60, 65, 70]
-
-random_iters = [50]
-
-
-# random_iters = None
+random_iters = None    # comment this line to use random iterations
 
 
 class MCTSNode:
@@ -112,10 +106,11 @@ class MCTSNode:
 
 
 def mcts(state, iters=200):
-
-    # if random_iters:
-    #     iters = np.random.choice(random_iters)
-
+    """
+    Perform MCTS on the current state of the game
+    """
+    if random_iters:
+        iters = np.random.choice(random_iters)
 
     root = MCTSNode(deepcopy(state))
 
@@ -125,7 +120,6 @@ def mcts(state, iters=200):
         leaf.backpropagate(simulation_result)
 
     return root.best_child().action, root
-
 
 
 if __name__ == '__main__':

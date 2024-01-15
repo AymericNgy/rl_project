@@ -15,6 +15,16 @@ import time
 
 
 def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False, nemesis=None):
+    """
+    play a party with policy against random policy or nemesis (if nemesis is not None)
+    :param policy: policy to play with
+    :param env: environment
+    :param first_turn_of_model: 0 if model play first, 1 otherwise
+    :param color_of_model: 0 if model is black, 1 otherwise
+    :param show_env: show environment
+    :param verbose: verbose
+    :param nemesis: nemesis to play against (if None : play against random policy)
+    """
     state, cur_player = env.reset()
     done = False
     turn = 0
@@ -35,7 +45,6 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
                 action = nemesis.get_move_to_act(env)
         state, reward, terminated, truncated, cur_player = env.step(action)
         done = terminated or truncated
-        # total_reward += reward
 
         if not env.jump:  # if not in jump session add a turn
             turn += 1
@@ -56,6 +65,14 @@ def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False,
 
 
 def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, nemesis=None):
+    """
+    evaluate policy against random policy or nemesis (if nemesis is not None)
+    :param policy: policy to play with
+    :param number_of_parties: number of parties to play
+    :param show_env: show environment
+    :param verbose: verbose
+    :param nemesis: nemesis to play against (if None : play against random policy)
+    """
     if nemesis:
         nemesis.is_an_opponent = True
         nemesis.color_of_model = 1  # [!] depending on if first
@@ -84,76 +101,26 @@ def evaluate_policy(policy, number_of_parties, show_env=False, verbose=False, ne
     return parties_lose_mean, parties_win_mean, parties_draw_mean
 
 
-# def evaluate_against_random(policy, number_of_parties=100, show_env=False, verbose=False):
-#     """
-#     use thread
-#     """
-#     thread_number = 1
-#     parties_per_thread = number_of_parties // thread_number
-#
-#     with ThreadPoolExecutor(max_workers=thread_number) as executor:
-#         # Lancez les threads et récupérez les objets futurs
-#         future_to_id = {
-#             executor.submit(evaluate_against_random_single, policy, parties_per_thread, show_env, verbose): i + 1 for i
-#             in range(5)}
-#
-#         # Attendez que tous les threads se terminent et récupérez les résultats
-#         for future, id_thread in future_to_id.items():
-#             try:
-#                 resultat = future.result()  # Obtenez le résultat du thread
-#                 print(f"Résultat du thread {id_thread}: {resultat}")
-#             except Exception as e:
-#                 print(f"Thread {id_thread} a levé une exception: {e}")
-
-
-def evaluate_against_random_thread(policy, number_of_parties=500, thread_number=5, show_env=False, verbose=False):
-    start_time = time.time()
-    parties_per_thread = number_of_parties // thread_number
-    print(parties_per_thread)
-    with ThreadPoolExecutor(max_workers=thread_number) as executor:
-        # Créez des tâches pour évaluer la politique dans différents threads
-        futures = [executor.submit(evaluate_policy, policy, parties_per_thread, show_env, verbose) for _
-                   in
-                   range(thread_number)]
-
-        # Récupérez les résultats de chaque tâche
-        results = [future.result() for future in futures]
-
-        # Affichez ou utilisez les résultats comme nécessaire
-
-        metrics = torch.tensor(results)
-        metric = metrics.mean(axis=0)
-
-        end_time = time.time()
-        elapsed_time = end_time - start_time
-        print("Execution time :", elapsed_time)
-
-        parties_lose_mean, parties_win_mean, parties_draw_mean = metric[0], metric[1], metric[2]
-
-        return parties_lose_mean, parties_win_mean, parties_draw_mean
-
-
 def display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean):
-    # Étiquettes pour les tranches du camembert
+    """
+    display pie of win, lose and draw
+    """
+
     labels = ['Lose', 'Win', 'Draw']
 
-    # Valeurs pour chaque tranche
+
     sizes = [parties_lose_mean, parties_win_mean, parties_draw_mean]
 
-    # Couleurs pour chaque tranche
     colors = ['red', 'green', 'orange']
 
-    # Séparation d'une tranche (avec une plus grande valeur) pour mettre en évidence
-    explode = (0.1, 0, 0)  # Explosion de la 1ère tranche (Lose)
+    explode = (0.1, 0, 0)  # explode 1st slice
 
-    # Créer le camembert
-    plt.figure(figsize=(7, 7))  # Taille du camembert
+    plt.figure(figsize=(7, 7))
     plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
 
-    # Ajouter un titre
     plt.title('Répartition des parties')
 
-    # Afficher le camembert
+
     plt.axis('equal')  # Assurez-vous que le camembert est circulaire
     plt.show()
 
@@ -162,29 +129,23 @@ if __name__ == '__main__':
     from agent_mc import Policy
     from mcts import MCTS
 
-    # # deal with MC_version module
-    # mc_version_path = 'MC_version'
-    #
-    # # Ajoutez le chemin d'accès à sys.path
-    # if mc_version_path not in sys.path:
-    #     sys.path.append(mc_version_path)
-    #
-    # # Maintenant, essayez d'importer le module
-    # import agent_mc
-
     # --- TO MODIFY ---
+
+    # --- choose nemesis model---
 
     # nemesis_model = Policy(minimax_evaluation=False)
     # nemesis_model.load_absolute("model_pull/model_80p.pt")
 
     nemesis_model = MCTS()
 
+    # --- choose policy to evaluate ---
+
     # policy = Policy(minimax_evaluation=False, depth_minimax=3)
     # policy.load_absolute("model_pull/model_80p.pt")
 
     policy = copy.deepcopy(nemesis_model)
 
-    number_of_parties = 1
+    number_of_parties = 10
 
     parties_lose_mean, parties_win_mean, parties_draw_mean = evaluate_policy(policy, number_of_parties,
                                                                              nemesis=nemesis_model, verbose=True)

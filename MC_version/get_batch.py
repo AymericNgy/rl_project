@@ -8,8 +8,12 @@ from tqdm import tqdm
 def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=False, nemesis_model=None):
     """
     return batch of value of states with model against random policy
-    :param number_of_parties:
-    :param model:
+    :param number_of_parties: number of parties
+    :param model: model to play with
+    :param gamma: discount factor
+    :param verbose: verbose
+    :param show_env: show environment
+    :param nemesis_model: nemesis model to play against (if None : play against random policy)
     :return:
     """
 
@@ -51,7 +55,6 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=Fals
                     action = random.choice(moves)
             state, reward, terminated, truncated, cur_player = env.step(action)
             done = terminated or truncated
-            # total_reward += reward
 
             # save state if it was the result of the model action
             if turn % 2 == first_turn_of_model:
@@ -75,7 +78,7 @@ def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=Fals
             intermediate_rewards = [value * 0.5 for value in intermediate_rewards]
 
             rewards += intermediate_rewards
-        elif color_looser_player == color_of_model:  # lose : reward = 1 # [???] need elif here
+        elif color_looser_player == color_of_model:  # lose : reward = 1
             rewards += [0] * number_new_states
         else:  # win : reward = 0
             intermediate_rewards.reverse()

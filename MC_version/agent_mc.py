@@ -15,7 +15,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class Policy(nn.Module):
     def __init__(self, minimax_evaluation=False, depth_minimax=2):
         """
-        nemesis_model : enemy model used for train
+        :param minimax_evaluation: if True : evaluation use minimax (impact on training when metrics collected)
+        :param depth_minimax: depth of minimax tree (if minimax_evaluation=True)
 
         must play first if minimax evaluation is used
         """
@@ -55,7 +56,10 @@ class Policy(nn.Module):
         self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
-
+        """
+        evaluate value of state
+        :param state: tensor of state
+        """
         x = state.float()
         for layer in self.fc_layers:
             x = layer(x)
@@ -97,8 +101,8 @@ class Policy(nn.Module):
 
     def get_move_to_act_from_minimax(self, env):
         """
-        supppse env is not end
-        :return: index of the chosen action
+        suppose env is not end
+        :return: index of the chosen action with minimax
         """
         if self.is_an_opponent:
             raise RuntimeError("can not be an opponent and use minimax")
@@ -129,8 +133,7 @@ class Policy(nn.Module):
     @execution_time
     def get_move_to_act(self, env):
         """
-        :param available_states: python list of available state
-        :return: move
+        :return: move to play (with minimax if minimax_evaluation=True)
         """
 
         if not self.minimax_evaluation:
@@ -148,9 +151,16 @@ class Policy(nn.Module):
         else:  # MINIMAX
             return self.get_move_to_act_from_minimax(env)
 
-
     def train(self, model_name_save, num_epochs=100, learning_rate=0.01, number_of_parties_for_batch=100, plot=False,
               nemesis_model=None):
+        """
+        train the model
+        model_name_save : name of the model saved
+        num_epochs : number of epochs
+        learning_rate : learning rate
+        number_of_parties_for_batch : number of parties for each batch
+        nemesis_model : model to play against (if None : play against random policy)
+        """
         criterion = nn.MSELoss()
         optimizer = optim.SGD(self.parameters(), lr=learning_rate)
 
@@ -166,16 +176,7 @@ class Policy(nn.Module):
 
         for epoch in range(num_epochs):
 
-            # generate data
-
             states, rewards = get_batch(number_of_parties_for_batch, self, nemesis_model=nemesis_model)
-
-            # mean_reward = float(rewards.mean())
-            # if max_mean_rewards < mean_reward:
-            #     max_mean_rewards = mean_reward
-            #     torch.save(self.state_dict(), "model_save/model_" + str(mean_reward) + ".pt")
-            #
-            # mean_rewards.append(mean_reward)
 
             values = self.evaluate_value(states)
             loss = criterion(values.squeeze(), rewards)
@@ -240,6 +241,7 @@ class Policy(nn.Module):
 if __name__ == '__main__':
     # --- TRAIN ---
 
+    # --- choose nemesis model ---
     from mcts import MCTS
     import checker_env
 
@@ -250,8 +252,12 @@ if __name__ == '__main__':
 
     nemesis_model = MCTS()
 
+    # --- choose policy model ---
+
     policy = Policy(minimax_evaluation=False)
     policy.load()
+
+    # --- train ---
 
     model_name_save = "MC_multi_agent_nemesis_MCTS_50iterMean"
     policy.train(model_name_save, num_epochs=5000, number_of_parties_for_batch=1,

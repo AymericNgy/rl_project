@@ -1,4 +1,4 @@
-using of the checker environment
+used for the checker environment :
 
 Copyright 2017 Andrew Edwards
 

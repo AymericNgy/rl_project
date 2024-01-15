@@ -1,29 +1,16 @@
 from checker_env import CheckerEnv as CheckerEnv1
-
 from plateau_essai2 import CheckerEnvForMCTS as CheckerEnv2
-
 from numpy import random
-
 import matplotlib.pyplot as plt
-
 import numpy as np
-
 import sys
-
 import os
-
 from tqdm import tqdm
-
 import threading
-
 from concurrent.futures import ThreadPoolExecutor
-
 import torch
-
 import time
-
 from mcts_essai2 import mcts
-
 from copy import deepcopy
 
 

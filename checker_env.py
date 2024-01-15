@@ -13,11 +13,6 @@ BLACK, WHITE = 0, 1
 UNUSED_BITS = 0b100000000100000000100000000100000000
 
 
-# CLASSES
-
-# [!] be careful about diff between self and other
-# [!] test new methods #
-
 class CheckerEnv:
     def __init__(self, max_steps=250):
         """
@@ -30,6 +25,9 @@ class CheckerEnv:
         self.new_game()
 
     def step(self, move):
+        """
+            Updates the game state to reflect the effects of the move
+        """
 
         terminated, truncated, winning_player = self.check_termination()
         assert terminated == False  # error if step() function call but game ended
@@ -47,11 +45,12 @@ class CheckerEnv:
         if winning_player == "Black":
             reward = -1
 
-
-
         return current_state, reward, terminated, truncated, current_player
 
     def reset(self):
+        """
+            Resets current state to new game.
+        """
         self.new_game()
         self.num_steps = 0
 
@@ -62,7 +61,8 @@ class CheckerEnv:
 
     def virtual_step(self, move):
         """
-        transiton fucntion since the current state and player of self
+        transition function since the current state and player of self
+        state is not updated
         :param action: move
         :return:
         """
@@ -74,6 +74,11 @@ class CheckerEnv:
         return state, player
 
     def check_termination(self):
+        """
+            Returns a tuple (terminated, truncated, winning_player) indicating
+            whether the game is over, whether the game was truncated due to
+            too many moves, and if so, which player won.
+        """
         terminated = self.is_over()
 
         truncated = self.num_steps >= self.max_steps
@@ -400,7 +405,7 @@ class CheckerEnv:
 
     def __str__(self):
         """
-            print(s out ASCII art representation of board.
+            prints out ASCII art representation of board.
         """
 
         EMPTY = -1
@@ -478,8 +483,10 @@ class CheckerEnv:
 
         return "".join(map(lambda x: "".join(x), board))
 
+
 if __name__ == '__main__':
     import sys
+
     env = CheckerEnv()
 
     print(env.get_state())
@@ -492,7 +499,6 @@ if __name__ == '__main__':
     env.make_move(moves[0])
     print(env.get_state())
 
-    taille_instance = sys.getsizeof(env)
+    size_instance = sys.getsizeof(env)
 
-    print(f"La taille mémoire de l'instance est de {taille_instance} octets.")
-
+    print(f"instances size of {size_instance} bytes.")

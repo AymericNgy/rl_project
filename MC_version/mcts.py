@@ -7,6 +7,9 @@ from utile import execution_time
 
 
 class MCTS(Policy):
+    """
+    use to encapsulate MCTS in Policy class
+    """
 
     def __init__(self):
         super().__init__()
