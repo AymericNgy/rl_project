@@ -112,6 +112,7 @@ class MCTSNode:
 
 
 def mcts(state, iters=200):
+
     # if random_iters:
     #     iters = np.random.choice(random_iters)
 
@@ -124,6 +125,7 @@ def mcts(state, iters=200):
         leaf.backpropagate(simulation_result)
 
     return root.best_child().action, root
+
 
 
 if __name__ == '__main__':

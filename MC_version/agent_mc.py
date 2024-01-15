@@ -55,6 +55,7 @@ class Policy(nn.Module):
         self.is_an_opponent = False  # if True : will try to minimize the value function
 
     def evaluate_value(self, state):
+
         x = state.float()
         for layer in self.fc_layers:
             x = layer(x)
