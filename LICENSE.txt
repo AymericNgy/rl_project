@@ -1,4 +1,4 @@
-used for the checker environment :
+License used for the checker environment :
 
 Copyright 2017 Andrew Edwards
 

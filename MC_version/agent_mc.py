@@ -243,14 +243,13 @@ if __name__ == '__main__':
 
     # --- choose nemesis model ---
     from mcts import MCTS
-    import checker_env
 
-    # nemesis_model = Policy(minimax_evaluation=False)
-    # nemesis_model.load("MC_version_nemesis_both_normal")
+    nemesis_model = Policy(minimax_evaluation=False)
+    nemesis_model.load("MC_version_nemesis_both_normal")
     # nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
-    # nemesis_model.is_an_opponent = True
+    nemesis_model.is_an_opponent = True
 
-    nemesis_model = MCTS()
+    # nemesis_model = MCTS()
 
     # --- choose policy model ---
 

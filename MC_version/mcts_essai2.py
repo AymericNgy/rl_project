@@ -105,7 +105,7 @@ class MCTSNode:
         return self.children[child]
 
 
-def mcts(state, iters=200):
+def mcts(state, iters=5):
     """
     Perform MCTS on the current state of the game
     """

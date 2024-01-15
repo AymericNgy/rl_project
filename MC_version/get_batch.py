@@ -1,8 +1,7 @@
-from checker_env import CheckerEnv
+from checker_env_MC import CheckerEnv
 from numpy import random
 import torch
 import numpy as np
-from tqdm import tqdm
 
 
 def get_batch(number_of_parties, model, gamma=0.99, verbose=False, show_env=False, nemesis_model=None):

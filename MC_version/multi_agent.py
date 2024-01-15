@@ -1,6 +1,4 @@
 from agent_mc import Policy
-from numpy import random
-import matplotlib.pyplot as plt
 import torch.nn as nn
 from worker import get_batch
 import torch.optim as optim
@@ -121,7 +119,7 @@ class TunedPolicy(Policy):
 
 
 if __name__ == '__main__':
-    import checker_env
+    from MC_version import checker_env
 
     # --- TO MODIFY ---
 

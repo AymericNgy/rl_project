@@ -1,17 +1,10 @@
 import copy
 
-from checker_env import CheckerEnv
+from checker_env_MC import CheckerEnv
 from numpy import random
 
 import matplotlib.pyplot as plt
-import numpy as np
-import sys
-import os
 from tqdm import tqdm
-import threading
-from concurrent.futures import ThreadPoolExecutor
-import torch
-import time
 
 
 def play_party(policy, env, first_turn_of_model, color_of_model, show_env=False, verbose=False, nemesis=None):
@@ -126,7 +119,6 @@ def display_pie(parties_lose_mean, parties_win_mean, parties_draw_mean):
 
 
 if __name__ == '__main__':
-    from agent_mc import Policy
     from mcts import MCTS
 
     # --- TO MODIFY ---
