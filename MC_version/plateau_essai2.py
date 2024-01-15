@@ -15,8 +15,6 @@ UNUSED_BITS = 0b100000000100000000100000000100000000
 
 # CLASSES
 
-# [!] be careful about diff between self and other
-# [!] test new methods #
 
 class CheckerEnvForMCTS:
     """
@@ -125,7 +123,7 @@ class CheckerEnvForMCTS:
         passive = self.passive
         if move < 0:
             move *= -1
-            taken_piece = int(1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') // 2)  # [!] changed
+            taken_piece = int(1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') // 2)
             self.pieces[passive] ^= taken_piece
             if self.forward[passive] & taken_piece:
                 self.forward[passive] ^= taken_piece
@@ -169,7 +167,7 @@ class CheckerEnvForMCTS:
         if move < 0:
             move *= -1
             taken_piece = int(
-                1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') // 2)  # [!] changed
+                1 << sum(i for (i, b) in enumerate(bin(move)[::-1]) if b == '1') // 2)
             B.pieces[passive] ^= taken_piece
             if B.forward[passive] & taken_piece:
                 B.forward[passive] ^= taken_piece
@@ -351,7 +349,6 @@ class CheckerEnvForMCTS:
         B.pieces = [x for x in self.pieces]
         return B
 
-    # [!] need to be improved ?
     def get_state(self):
         """
         return numpy array of state - length 32

@@ -24,17 +24,3 @@ def execution_time(func):
 
 if __name__ == '__main__':
     pass
-    # # Using the decorator with the list as an argument
-    # @execution_time(temps_list)
-    # def my_function():
-    #     # Your code here
-    #     for _ in range(1000000):
-    #         pass
-    #
-    #
-    # # Calling the decorated function
-    # my_function()
-    # my_function()
-    #
-    # # Displaying the list of execution times
-    # print("List of execution times:", temps_list)

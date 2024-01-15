@@ -1,6 +1,6 @@
 from agent_mc import Policy
 import torch.nn as nn
-from worker import get_batch
+from get_batch import get_batch
 import torch.optim as optim
 import evaluate
 import copy
@@ -119,14 +119,14 @@ class TunedPolicy(Policy):
 
 
 if __name__ == '__main__':
-    from MC_version import checker_env
+    import checker_env_MC
 
     # --- TO MODIFY ---
 
     # --- nemesis model ---
     first_nemesis_model = Policy()
     first_nemesis_model.load_absolute("model_pull/model_80p.pt")
-    first_nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
+    first_nemesis_model.color_of_model = checker_env_MC.WHITE  # [!] depending if model begin
     first_nemesis_model.is_an_opponent = True
 
     nemesis_model = MultiAgent([first_nemesis_model])

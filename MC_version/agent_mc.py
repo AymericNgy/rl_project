@@ -84,7 +84,7 @@ class Policy(nn.Module):
                 return 0
             else:
                 return 1
-        if env.active != self.color_of_model:  # maximizing #  [!] why !=and not ==
+        if env.active != self.color_of_model:  # maximizing
             # print("max depth", depth)
             value = -1_000_000  # -infinity
             moves, states = env.available_states()
@@ -107,7 +107,6 @@ class Policy(nn.Module):
         if self.is_an_opponent:
             raise RuntimeError("can not be an opponent and use minimax")
 
-        # [!] can not work because function return index not corresponding to the sent available_states in get_index_to_act
         if env.is_over():
             raise RuntimeError("game not suppose to be over")
 
@@ -231,7 +230,7 @@ class Policy(nn.Module):
     def save_absolute(self, name):
         torch.save(self.state_dict(), name)
 
-    def load(self, name='model_6'):
+    def load(self, name='model_80p'):
         self.load_state_dict(torch.load('model_save/' + name + '.pt', map_location=self.device))
 
     def load_absolute(self, name):
@@ -244,12 +243,12 @@ if __name__ == '__main__':
     # --- choose nemesis model ---
     from mcts import MCTS
 
-    nemesis_model = Policy(minimax_evaluation=False)
-    nemesis_model.load("MC_version_nemesis_both_normal")
+    # nemesis_model = Policy(minimax_evaluation=False)
+    # nemesis_model.load("MC_version_nemesis_both_normal")
     # nemesis_model.color_of_model = checker_env.WHITE  # [!] depending if model begin
-    nemesis_model.is_an_opponent = True
+    # nemesis_model.is_an_opponent = True
 
-    # nemesis_model = MCTS()
+    nemesis_model = MCTS()
 
     # --- choose policy model ---
 
