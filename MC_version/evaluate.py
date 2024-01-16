@@ -132,10 +132,11 @@ if __name__ == '__main__':
 
     # --- choose policy to evaluate ---
 
-    # policy = Policy(minimax_evaluation=False, depth_minimax=3)
-    # policy.load_absolute("model_pull/model_80p.pt")
+    from agent_mc import Policy
+    policy = Policy(minimax_evaluation=False, depth_minimax=3)
+    policy.load_absolute("model_pull/model_80p.pt")
 
-    policy = copy.deepcopy(nemesis_model)
+    # policy = copy.deepcopy(nemesis_model)
 
     number_of_parties = 10
 
